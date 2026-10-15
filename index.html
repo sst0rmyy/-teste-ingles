@@ -531,7 +531,7 @@ let FBN=0;async function fbTr(list){const lg=LANG;let ok=0,fail=0;for(let i=0;i<
 try{localStorage.setItem(`sutc`,JSON.stringify(TC))}catch(e){}
 if(fail&&!ok&&Date.now()-FBN>8000){FBN=Date.now();toast(`Sem internet para traduzir agora. Tente de novo.`)}}
 async function fillTr(){const els=[...document.querySelectorAll(TSEL)];els.forEach(e=>{if(e.dataset.pt==null)e.dataset.pt=e.innerHTML});
-if(LANG!==`pt`){const need=[...new Set(els.map(e=>e.dataset.pt).filter(t=>!TC[LANG+`|`+t]))];
+if(0){const need=[...new Set(els.map(e=>e.dataset.pt).filter(t=>!TC[LANG+`|`+t]))];
 if(need.length){try{const sm=window.claude&&await window.claude.use(`sample`);if(!sm)throw 0;const out=await sm.json(`Translate these items into ${LG()[3]}. Items are Brazilian Portuguese and may contain HTML tags. Keep all HTML tags and any English words or sentences unchanged. Return ONLY a JSON array of strings, same order and length.\n`+JSON.stringify(need));need.forEach((t,i)=>{if(out[i])TC[LANG+`|`+t]=out[i]})}catch(e){}
 const miss=need.filter(t=>!TC[LANG+`|`+t]);if(miss.length)await fbTr(miss)}}
 document.querySelectorAll(TSEL).forEach(e=>{if(e.dataset.pt!=null)e.innerHTML=LANG===`pt`?e.dataset.pt:(TC[LANG+`|`+e.dataset.pt]||e.dataset.pt)});
@@ -958,4 +958,34 @@ head();draw();popV();if(window.speechSynthesis)speechSynthesis.getVoices();
 function micMsg(){return (window.self!==window.top?"Este app está aberto dentro de uma moldura que bloqueia o microfone. Abra o link em uma aba própria do Chrome ou Safari. ":"O microfone está bloqueado. Toque no cadeado 🔒 ao lado do endereço, ative o Microfone e tente de novo. ")+"Enquanto isso, você pode digitar abaixo:"}
 function manual(){const i=$("mi"),v=i&&i.value.trim();const e=document.querySelector(`#app .card .en`);if(e)S.tg=e.textContent;if(!v||!S.tg)return;S.res=score(S.tg,v);save();if(S.res.pct>=90)confetti();draw()}
 let seen=null;try{seen=localStorage.getItem("sut")}catch(e){}if(!seen)tour(0);
+/* ---- tradução da interface inteira ---- */
+(function(){
+const PT2=new Set(`de da do das dos que não nao é e para com um uma uns umas os o em na nas nos por se mais muito eu você voce vocês ele ela nós eles elas meu minha meus minhas seu sua seus suas isso este esta essa esse ou como quando onde porque também tambem já sim seu ser estar sua toque aqui depois antes cada sem mas até ao aos pelo pela fale ouça digite escolha frase frases palavra palavras lição lições missão fase mundo loja moedas medalhas conquistas treino revisão cartas jogar começar continuar voltar próxima proxima anterior conferir falar ouvir devagar idioma traduções som conta dicionário nativos batalha aventura monstros mapa praticar sair fechar entrar pular dica dicas acertou errou nível faixa dias dia estrelas`.split(` `));
+const EN2=new Set(`the is are you i to of and it in my your this that what do does can have be am was were will would please for with at on me we they he she how where not don't i'm it's i'll i'd you're could should there their here an from by just like want need go good thank thanks hello hi yes`.split(` `));
+const CTX=`nav,#hud,.hb,.btn,.chip,.lvh,.wh,.stp,h1,h2,h3,.sub,.pl,.hubn,.medal,.dots,.tbox,label,.back,.hf,.hf2,.kr,.gt,.toast,.tip,.hint,.node,.pin,.shop,.lvb,.xpt,.card>p,.card>small`;
+const SKIP=`script,style,svg,input,textarea,select,.en,.wd,.tt,.wd2,.gk,.kj2,.dk,.nob,.hanko,.bub,#pop b,code,[data-notr],.av,.sak,.cho`;
+function isPT(t){if(/[ãõçáéíóúâêôàÃÕÇÁÉÍÓÚÂÊÔ]/.test(t))return true;const w=t.toLowerCase().match(/[a-z']+/g)||[];let p=0,e=0;w.forEach(x=>{if(PT2.has(x))p++;if(EN2.has(x))e++});return p>e?true:e>p?false:null}
+function segs(s,ctx){return s.split(/(“[^”]*”|"[^"]*")/).map(x=>{const q=/^[“"]/.test(x),core=q?x.slice(1,-1):x;if(!/[A-Za-zÀ-ÿ]{2,}/.test(core))return[x,0];const d=isPT(core);return[x,d===true||(d===null&&!q&&ctx)?1:0]})}
+const key=t=>LANG+`|`+t,core=t=>{const m=t.match(/^([\s\S]*?)([A-Za-zÀ-ÿ][\s\S]*[A-Za-zÀ-ÿ.!?…)]|[A-Za-zÀ-ÿ])([\s\S]*)$/);return m?[m[1],m[2],m[3]]:[``,t,``]};
+const BUSY=new Set();let RUN=0,TOLD=0;
+function nodes(){const out=[],w=document.createTreeWalker(document.body,4);let n;while(n=w.nextNode()){const pe=n.parentElement;if(!pe||pe.closest(SKIP))continue;if(n._t!=null&&n.nodeValue!==n._t){n._o=null;n._t=null}if(!/[A-Za-zÀ-ÿ]{2,}/.test(n._o??n.nodeValue))continue;out.push(n)}return out}
+function plan(n){const o=n._o??n.nodeValue,ctx=!!n.parentElement.closest(CTX)&&!n.parentElement.closest(`.opt`);return{o,parts:segs(o,ctx).map(([x,t])=>{if(!t)return[x];const q=/^[“"]/.test(x),c=q?x.slice(1,-1):x,[a,b,z]=core(c);return[x,b,q?x[0]+a:a,z+(q?x.slice(-1):``)]})}}
+function apply(list){list.forEach(n=>{const{o,parts}=plan(n);let all=true;const t=parts.map(p=>{if(p.length===1)return p[0];const v=TC[key(p[1])];if(v==null){all=false;return p[0]}return p[2]+v+p[3]}).join(``);if(t!==o){n._o=o;n._t=t;n.nodeValue=t}})}
+function restore(){const w=document.createTreeWalker(document.body,4);let n;while(n=w.nextNode()){if(n._o!=null){if(n.nodeValue===n._t)n.nodeValue=n._o;n._o=null;n._t=null}}}
+async function fetchTr(need,lg){let got=0;
+try{const sm=window.claude&&await window.claude.use(`sample`);if(sm){for(let i=0;i<need.length;i+=40){const ch=need.slice(i,i+40);const out=await sm.json(`Translate each item from Brazilian Portuguese into ${LGS.find(l=>l[0]===lg)[3]}. These are short UI labels and instructions of an English-learning game. Keep emojis, numbers and any English words or sentences unchanged. Return ONLY a JSON array of strings, same order and length.\n`+JSON.stringify(ch));if(Array.isArray(out))ch.forEach((t,j)=>{if(typeof out[j]===`string`&&out[j]){TC[lg+`|`+t]=out[j];got++}})}}}catch(e){}
+const rest=need.filter(t=>TC[lg+`|`+t]==null);
+for(let i=0;i<rest.length;i+=6){await Promise.all(rest.slice(i,i+6).map(async t=>{try{TC[lg+`|`+t]=await gt(t,lg);got++}catch(e){}}))}
+try{localStorage.setItem(`sutc`,JSON.stringify(TC))}catch(e){}return got}
+async function trAll(){if(LANG===`pt`){restore();return}const lg=LANG,list=nodes();apply(list);
+const need=[...new Set(list.flatMap(n=>plan(n).parts.filter(p=>p.length>1).map(p=>p[1])))].filter(t=>TC[key(t)]==null&&!BUSY.has(lg+`|`+t));
+if(!need.length)return;need.forEach(t=>BUSY.add(lg+`|`+t));const my=++RUN;if(Date.now()-TOLD>6000){TOLD=Date.now();toast(`🌐 Traduzindo…`)}
+const got=await fetchTr(need,lg);need.forEach(t=>BUSY.delete(lg+`|`+t));
+if(!got&&need.length){toast(`Não consegui traduzir agora. Verifique a internet.`)}
+if(LANG===lg)apply(nodes())}
+window.trAll=trAll;let DB=0;
+new MutationObserver(()=>{clearTimeout(DB);DB=setTimeout(trAll,120)}).observe(document.body,{childList:true,subtree:true});
+const _sl=setLang;setLang=function(c){_sl(c);setTimeout(trAll,30)};
+setTimeout(trAll,300);
+})();
 </script></body></html>
