@@ -2,7 +2,8 @@
 <html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Teste Inglês</title>
-<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png"><meta name="theme-color" content="#d7263d"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Teste Inglês">
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#d7263d"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Teste Inglês">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Cinzel:wght@700;900&family=Noto+Serif+JP:wght@700;900&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap">
 <style>
 :root{--bg:#faf8f4;--card:#fff;--tx:#1d1d1f;--mut:#6b6b70;--ac:#2f6fed;--ok:#1f9d55;--bad:#d64545;--bd:#e6e2da;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -664,7 +665,7 @@ const snap=()=>JSON.stringify([PR,st,LANG,RS]);
 function queueCloud(){clearTimeout(QC);QC=setTimeout(async()=>{const d=await cloudDoc();if(!d||!CLOUDOK)return;try{await d.set(JSON.parse(JSON.stringify({PR,st,lang:LANG,rs:RS||null,ts:Date.now()})))}catch(e){}},1200)}
 savePR=function(){PR.ts=Date.now();try{localStorage.setItem(`sup`,JSON.stringify(PR))}catch(e){}queueCloud()};
 async function cloudLoad(){const d=await cloudDoc();if(!d)return;try{const s=await d.get();if(s.exists){const c=s.data();if((c.ts||0)>(PR.ts||0)&&c.PR){PR=JSON.parse(JSON.stringify(c.PR));if(c.st)st=JSON.parse(JSON.stringify(c.st));if(c.lang)LANG=c.lang;RS=c.rs?JSON.parse(JSON.stringify(c.rs)):null;fixState();if(PR.v!==4)mig4();try{localStorage.setItem(`sup`,JSON.stringify(PR))}catch(e){}LSNAP=snap();CLOUDOK=true;head();$(`lg`).textContent=LG()[2];draw();return}}CLOUDOK=true;LSNAP=snap();queueCloud()}catch(e){CLOUDOK=true}}
-function kbInject(){try{const o=document.querySelector(`#app .orbs`);if(o&&!$(`kbm`))o.insertAdjacentHTML(`afterend`,`<div id='kbm' style='margin-top:12px'><button class='btn' style='width:100%' onclick='kbOpen()'>⌨️ Falar pelo teclado (sem pedir permissão)</button></div>`)}catch(e){}}
+function kbInject(){try{const o=document.querySelector(`#app .orbs`);if(o&&!$(`kbm`))o.insertAdjacentHTML(`afterend`,`<div id='kbm' style='margin-top:12px'><div class='row' style='margin-top:0'><input class='t' id='mi' placeholder='⌨️ Ou digite a frase em inglês aqui' autocomplete='off' autocapitalize='off' onkeydown="if(event.key==='Enter')manual()"><button class='btn p' style='flex:none;min-width:0' onclick='manual()'>Conferir</button></div><small>Sem microfone: digite a frase (ou use o 🎤 do teclado do celular).</small></div>`)}catch(e){}}
 function kbOpen(){const e=document.querySelector(`#app .card .en`);if(e)S.tg=e.textContent;const k=$(`kbm`);if(!k)return;k.innerHTML=`<div class='row' style='margin-top:0'><input class='t' id='mi' placeholder='Toque aqui e use o 🎤 do teclado' onkeydown="if(event.key==='Enter')manual()"><button class='btn p' style='flex:none;min-width:0' onclick='manual()'>Conferir</button></div><small>No teclado do celular, toque no 🎤 e fale em inglês.</small>`;$(`mi`).focus()}
 const _d5=draw;draw=function(){_d5();if(CLOUDOK){const s=snap();if(s!==LSNAP){LSNAP=s;queueCloud()}}kbInject()};
 cloudLoad();
@@ -945,6 +946,6 @@ const _ho4=homeOpen;homeOpen=function(){_ho4();try{const s=HS&&HS.querySelector(
 const _d12=draw;draw=function(){_d12();try{const s=document.querySelector(`#hubnat small`);if(s)s.textContent=`Converse com pessoas do mundo todo`}catch(e){}};
 head();draw();popV();if(window.speechSynthesis)speechSynthesis.getVoices();
 function micMsg(){return (window.self!==window.top?"Este app está aberto dentro de uma moldura que bloqueia o microfone. Abra o link em uma aba própria do Chrome ou Safari. ":"O microfone está bloqueado. Toque no cadeado 🔒 ao lado do endereço, ative o Microfone e tente de novo. ")+"Enquanto isso, você pode digitar abaixo:"}
-function manual(){const i=$("mi"),v=i&&i.value.trim();if(!v||!S.tg)return;S.res=score(S.tg,v);save();if(S.res.pct>=90)confetti();draw()}
+function manual(){const i=$("mi"),v=i&&i.value.trim();const e=document.querySelector(`#app .card .en`);if(e)S.tg=e.textContent;if(!v||!S.tg)return;S.res=score(S.tg,v);save();if(S.res.pct>=90)confetti();draw()}
 let seen=null;try{seen=localStorage.getItem("sut")}catch(e){}if(!seen)tour(0);
 </script></body></html>
