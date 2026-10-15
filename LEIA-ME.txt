@@ -1,0 +1,18 @@
+TESTE INGLÊS — aplicativo instalável (PWA)
+
+COMO COLOCAR NO AR (grátis, 2 minutos)
+1) Acesse https://app.netlify.com/drop (ou Vercel / GitHub Pages)
+2) Arraste esta PASTA inteira para a página.
+3) Você recebe um link https://... — abra no celular ou no computador.
+
+COMO INSTALAR
+- Android (Chrome): menu ⋮ > "Instalar app" / "Adicionar à tela inicial".
+- iPhone (Safari): Compartilhar > "Adicionar à Tela de Início".
+- Computador (Chrome/Edge): ícone de instalar na barra de endereço.
+
+OBSERVAÇÕES
+- Lições, exercícios, frases, cartas, loja e medalhas funcionam offline depois da primeira visita.
+- Reconhecimento de voz: use Chrome, Edge ou Safari e permita o microfone.
+- Batalha, Nativos, dicionário, sugestões 💡 e troca de idioma das traduções
+  dependem do Claude e só funcionam no link do claude.ai.
+- O progresso fica salvo no próprio aparelho.
