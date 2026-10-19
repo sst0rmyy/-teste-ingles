@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}img{max-width:100%}</style></head><body>
+<title>Mesa de Análise Processual</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: mesa de trabalho em duas colunas — à esquerda a "capa dos autos" (entrada), à direita a análise; empilha no celular */
+:root{
+  --bg:#f3f4f6; --paper:#ffffff; --ink:#1b2330; --mut:#5d6675; --line:#d9dde4;
+  --accent:#1d4e89; --accent-ink:#ffffff; --accent-soft:#e3ebf6;
+  --stamp:#a0521a; --stamp-soft:#f7ebde;
+  --ok:#1e7a4a; --warn:#9a6a00; --bad:#b3261e; --warn-soft:#fbf2d9; --bad-soft:#fbe4e2;
+  --f-display:"Literata",Georgia,"Times New Roman",serif;
+  --f-ui:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12161c; --paper:#1a2029; --ink:#e7eaf0; --mut:#9aa3b2; --line:#2c3440;
+  --accent:#7fb0ec; --accent-ink:#0d1520; --accent-soft:#1f2c3d;
+  --stamp:#e2a06a; --stamp-soft:#33261b;
+  --ok:#5cc58c; --warn:#e3b84f; --bad:#ff8a80; --warn-soft:#2f2a17; --bad-soft:#3a1f1d;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161c; --paper:#1a2029; --ink:#e7eaf0; --mut:#9aa3b2; --line:#2c3440;
+  --accent:#7fb0ec; --accent-ink:#0d1520; --accent-soft:#1f2c3d;
+  --stamp:#e2a06a; --stamp-soft:#33261b;
+  --ok:#5cc58c; --warn:#e3b84f; --bad:#ff8a80; --warn-soft:#2f2a17; --bad-soft:#3a1f1d;
+  color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-ui);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;border-bottom:2px solid var(--ink);padding-bottom:12px}
+header.top h1{font-family:var(--f-display);font-size:clamp(24px,3.4vw,34px);line-height:1.1;margin:0;text-wrap:balance;font-weight:700}
+header.top p{margin:4px 0 0;color:var(--mut);max-width:62ch}
+.seal{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--stamp);border:1.5px solid var(--stamp);padding:4px 10px;border-radius:3px;transform:rotate(-2deg);white-space:nowrap}
+.grid{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:880px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:18px;min-width:0}
+.panel h2{font-family:var(--f-ui);font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);margin:0 0 12px;font-weight:600}
+.stack{display:flex;flex-direction:column;gap:16px}
+label.lb{display:block;font-weight:600;font-size:13px;margin-bottom:6px}
+.hint{font-size:12.5px;color:var(--mut);margin-top:4px}
+.sides{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sides input{position:absolute;opacity:0;pointer-events:none}
+.sides label{display:block;border:1px solid var(--line);border-radius:5px;padding:8px 10px;font-size:13.5px;cursor:pointer;background:var(--paper)}
+.sides label small{display:block;color:var(--mut);font-size:11.5px}
+.sides input:checked+label{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.sides input:focus-visible+label{outline:2px solid var(--accent);outline-offset:2px}
+.sides .full{grid-column:1/-1}
+input[type=text],input[type=date],select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:5px;padding:8px 10px}
+textarea{resize:vertical;min-height:70px}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:420px){.row2{grid-template-columns:1fr}}
+.drop{border:1.5px dashed var(--line);border-radius:6px;padding:18px;text-align:center;cursor:pointer;background:var(--bg)}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop strong{display:block;font-family:var(--f-display);font-size:17px}
+.drop span{font-size:12.5px;color:var(--mut)}
+.files{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.file{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:5px;padding:8px 10px;font-size:13px;background:var(--paper)}
+.file .nm{flex:1;min-width:0;overflow-wrap:anywhere}
+.file .meta{display:block;color:var(--mut);font-size:12px;font-family:var(--f-mono)}
+.file button{border:0;background:none;color:var(--mut);cursor:pointer;font-size:18px;line-height:1;padding:0 2px}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:1px 7px;border-radius:99px;margin-right:4px;margin-top:3px}
+.pill.ok{background:var(--accent-soft);color:var(--accent)}
+.pill.img{background:var(--warn-soft);color:var(--warn)}
+details.paste summary{cursor:pointer;font-size:13px;color:var(--accent);font-weight:600}
+details.paste textarea{margin-top:8px;min-height:110px;font-family:var(--f-mono);font-size:12.5px}
+.btn{font:600 14.5px var(--f-ui);border-radius:5px;border:1px solid var(--line);background:var(--paper);color:var(--ink);padding:10px 14px;cursor:pointer}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);width:100%;padding:13px 14px;font-size:15.5px}
+.btn.sm{padding:6px 10px;font-size:13px}
+.btn.stop{border-color:var(--bad);color:var(--bad)}
+.note{font-size:13px;border-radius:5px;padding:10px 12px;background:var(--warn-soft);color:var(--ink);border:1px solid var(--line)}
+.note.bad{background:var(--bad-soft)}
+.note b{color:var(--warn)}
+.note.bad b{color:var(--bad)}
+.legal{font-size:12px;color:var(--mut);border-top:1px solid var(--line);padding-top:10px}
+/* Resultado */
+.res-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.res-head .tools{display:flex;flex-wrap:wrap;gap:6px}
+.status{font-family:var(--f-mono);font-size:12.5px;color:var(--mut)}
+.status .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--stamp);margin-right:6px;vertical-align:middle;animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.status .dot{animation:none}}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.toc a{font-size:12px;text-decoration:none;color:var(--accent);border:1px solid var(--line);border-radius:99px;padding:3px 10px;background:var(--paper)}
+.doc{font-family:var(--f-display);font-size:16px;line-height:1.65;max-width:78ch;overflow-wrap:anywhere}
+.doc h1,.doc h2{font-size:19px;margin:28px 0 8px;padding-top:12px;border-top:1px solid var(--line);text-wrap:balance}
+.doc h2:first-child,.doc h1:first-child{margin-top:0;border-top:0;padding-top:0}
+.doc h3{font-size:16.5px;margin:18px 0 6px}
+.doc p,.doc ul,.doc ol{margin:0 0 10px}
+.doc li{margin:2px 0}
+.doc code{font-family:var(--f-mono);font-size:13px;background:var(--bg);padding:1px 4px;border-radius:3px}
+.doc pre{background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:12px;overflow-x:auto;font-size:13px}
+.doc blockquote{margin:0 0 10px;padding:6px 14px;border-left:3px solid var(--stamp);background:var(--stamp-soft)}
+.doc table{border-collapse:collapse;font-family:var(--f-ui);font-size:13.5px;width:100%}
+.doc .tbl{overflow-x:auto;margin-bottom:12px}
+.doc th,.doc td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+.doc th{background:var(--bg)}
+.doc hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+.doc strong{font-weight:700}
+.empty ol{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.empty li{border:1px solid var(--line);border-radius:5px;padding:10px 12px;background:var(--bg)}
+.empty li b{display:block;font-family:var(--f-display);font-size:15px}
+.empty li span{font-size:12.5px;color:var(--mut)}
+.empty .n{font-family:var(--f-mono);font-size:11px;color:var(--stamp);letter-spacing:.05em}
+.empty p{color:var(--mut);margin:0 0 14px;max-width:62ch}
+.chat{margin-top:22px;border-top:2px solid var(--ink);padding-top:14px}
+.chat h3{font-family:var(--f-display);font-size:17px;margin:0 0 4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+.chips button{font:500 12.5px var(--f-ui);border:1px solid var(--line);border-radius:99px;padding:5px 11px;background:var(--paper);color:var(--ink);cursor:pointer}
+.qa{display:flex;flex-direction:column;gap:12px;margin-bottom:12px}
+.qa .q{font-weight:600;font-size:14px;background:var(--accent-soft);border-radius:5px;padding:8px 12px}
+.ask{display:flex;gap:8px;align-items:flex-end}
+.ask textarea{min-height:46px}
+.mono{font-family:var(--f-mono)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Mesa de Análise Processual</h1>
+      <p>Anexe o PDF do processo, da intimação ou da carta do INSS. A análise sai na ordem de trabalho do escritório: identificação, prazo, riscos, providências e minuta.</p>
+    </div>
+    <span class="seal">Previdenciário · Cível · Consumidor · JEF/JEC</span>
+  </header>
+
+  <div class="grid">
+    <!-- ENTRADA -->
+    <section class="panel stack" aria-labelledby="h-entrada">
+      <h2 id="h-entrada">Autos e contexto</h2>
+
+      <div>
+        <span class="lb" id="lb-lado">De qual lado está o seu cliente?</span>
+        <div class="sides" role="radiogroup" aria-labelledby="lb-lado">
+          <input type="radio" name="lado" id="l-aut" value="autor/requerente"><label for="l-aut">Autor<small>requerente / exequente</small></label>
+          <input type="radio" name="lado" id="l-reu" value="réu/requerido"><label for="l-reu">Réu<small>requerido / executado</small></label>
+          <input type="radio" name="lado" id="l-seg" value="segurado(a)/beneficiário(a) contra o INSS"><label for="l-seg">Segurado<small>contra o INSS</small></label>
+          <input type="radio" name="lado" id="l-ins" value="INSS / ente público"><label for="l-ins">INSS<small>ente público</small></label>
+          <input type="radio" name="lado" id="l-nd" value="" checked><label for="l-nd" class="full">Não informado<small>a análise deduz pelo documento e diz qual lado assumiu</small></label>
+        </div>
+      </div>
+
+      <div>
+        <span class="lb">Documentos</span>
+        <div class="drop" id="drop" tabindex="0" role="button" aria-describedby="drop-desc">
+          <strong>Anexar PDF</strong>
+          <span id="drop-desc">Arraste aqui ou toque para escolher. Aceita vários PDFs e fotos de documentos.</span>
+        </div>
+        <input type="file" id="file" accept="application/pdf,image/jpeg,image/png,image/webp" multiple hidden>
+        <div class="files" id="files"></div>
+        <div class="hint" id="pg-summary"></div>
+      </div>
+
+      <details class="paste">
+        <summary>Colar texto em vez de anexar</summary>
+        <textarea id="pasted" placeholder="Cole aqui o texto da intimação, decisão ou exigência do INSS"></textarea>
+      </details>
+
+      <div class="row2">
+        <div>
+          <label class="lb" for="rito">Rito / órgão</label>
+          <select id="rito">
+            <option value="">Deduzir do documento</option>
+            <option>Juizado Especial Federal (Lei 10.259/01)</option>
+            <option>Juizado Especial Cível estadual (Lei 9.099/95)</option>
+            <option>Vara Federal — procedimento comum (CPC)</option>
+            <option>Vara Estadual — procedimento comum (CPC)</option>
+            <option>Vara Estadual — competência delegada previdenciária</option>
+            <option>Processo administrativo no INSS</option>
+            <option>Recurso — Turma Recursal / Tribunal</option>
+          </select>
+        </div>
+        <div>
+          <label class="lb" for="intim">Data da intimação / ciência</label>
+          <input type="date" id="intim">
+        </div>
+      </div>
+      <div>
+        <label class="lb" for="local">Comarca / subseção e UF</label>
+        <input type="text" id="local" placeholder="Ex.: Subseção de Campinas/SP — para feriados locais">
+      </div>
+      <div>
+        <label class="lb" for="obs">O que você precisa (opcional)</label>
+        <textarea id="obs" placeholder="Ex.: cliente recebeu carta de exigência; quero saber se cabe recurso; feriado municipal em 20/11"></textarea>
+      </div>
+
+      <div id="no-claude" class="note" hidden>
+        <b>Análise automática indisponível nesta abertura.</b> Abra a página pelo link do claude.ai para analisar aqui. Você ainda pode anexar o PDF e copiar o pedido completo para colar numa conversa com o Claude.
+      </div>
+      <button class="btn primary" id="go" disabled>Analisar documento</button>
+      <button class="btn sm" id="copy-prompt" disabled>Copiar pedido completo</button>
+      <div class="hint" id="go-hint">Anexe um PDF ou cole um texto para começar.</div>
+
+      <p class="legal">Os documentos são lidos no seu navegador e enviados ao Claude pela sua conta só quando você toca em Analisar. Nada fica salvo nesta página. A análise é apoio e deve ser revisada pelo advogado responsável.</p>
+    </section>
+
+    <!-- RESULTADO -->
+    <section class="panel" aria-labelledby="h-res">
+      <div class="res-head">
+        <h2 id="h-res" style="margin:0">Análise</h2>
+        <div class="tools">
+          <button class="btn sm stop" id="stop" hidden>Parar</button>
+          <button class="btn sm" id="copy-all" hidden>Copiar análise</button>
+          <button class="btn sm" id="copy-min" hidden>Copiar minuta</button>
+          <button class="btn sm" id="dl" hidden>Baixar .md</button>
+        </div>
+      </div>
+      <div class="status" id="status" aria-live="polite"></div>
+      <nav class="toc" id="toc" aria-label="Seções da análise"></nav>
+      <div id="err" class="note bad" hidden></div>
+
+      <div id="empty" class="empty">
+        <p>Depois de anexar os autos, a análise aparece aqui nesta ordem. Se for o processo inteiro, o foco fica no último ato pendente para o seu cliente.</p>
+        <ol>
+          <li><span class="n">1</span><b>Identificação</b><span>Documento, órgão, vara, nº do processo ou NB, partes, data e o ato pendente.</span></li>
+          <li><span class="n">2</span><b>Linha do tempo</b><span>Só para processo inteiro: um evento por linha e pedidos ainda não decididos.</span></li>
+          <li><span class="n">3</span><b>Explicação simples</b><span>Como para uma criança de 7 anos, com exemplos do dia a dia.</span></li>
+          <li><span class="n">4</span><b>Resumo técnico</b><span>O que foi decidido ou pedido, com eventos e folhas, e a tese contrária.</span></li>
+          <li><span class="n">5</span><b>Prazo e risco</b><span>Dias úteis ou corridos, fundamento, data final e folga de 1 dia útil.</span></li>
+          <li><span class="n">6</span><b>Pontos fortes e fracos</b><span>Nossos argumentos, nossas fragilidades e erros da parte contrária.</span></li>
+          <li><span class="n">7</span><b>O que fazer</b><span>Passos por urgência, checklist com o cliente e cobrança de ordem descumprida.</span></li>
+          <li><span class="n">8</span><b>Minuta</b><span>Rascunho da peça com [campos] a completar e só fatos dos autos.</span></li>
+        </ol>
+      </div>
+      <article class="doc" id="out" hidden></article>
+      <p class="hint" id="trunc" hidden>A resposta foi cortada pelo limite de tamanho. <button class="btn sm" id="cont">Continuar de onde parou</button></p>
+
+      <div class="chat" id="chat" hidden>
+        <h3>Perguntar sobre estes autos</h3>
+        <p class="hint" style="margin:0">As perguntas usam o mesmo documento e a análise acima.</p>
+        <div class="chips" id="chips">
+          <button>Refaça a minuta mais completa e formal</button>
+          <button>Confira de novo a contagem do prazo, dia a dia</button>
+          <button>Quais jurisprudências devo pesquisar? Marque [VERIFICAR]</button>
+          <button>Escreva uma mensagem simples para o cliente explicando a situação</button>
+          <button>Liste os documentos que faltam pedir ao cliente</button>
+        </div>
+        <div class="qa" id="qa"></div>
+        <div class="ask">
+          <textarea id="q" placeholder="Ex.: e se o cliente tiver laudo novo, posso juntar agora?"></textarea>
+          <button class="btn" id="send">Enviar</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const MAX_DOC_CHARS = 170000;   // cabe com folga no limite de 256 KiB por chamada
+const MAX_IMG_PAGES = 8;
+const MIN_TEXT = 40;            // abaixo disso a página é tratada como imagem/digitalizada
+
+if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+const S = { docs: [], sample: null, imgLimit: 0, lastPrompt: "", turns: [], analysis: "", busy: false, ctl: null, imgNote: "" };
+
+/* ---------- Instruções (fixas) ---------- */
+const INSTRUCOES = `Você é um assistente jurídico com mais de 10 anos de experiência em cartório judicial e em escritório de advocacia, especializado em Direito Previdenciário (aposentadorias, auxílios, BPC/LOAS, pensões), Direito Civil e Direito do Consumidor, incluindo Juizados Especiais. Você ajuda um advogado a entender documentos judiciais e administrativos e a decidir o que fazer.
+
+ANTES DE ANALISAR
+- Se o lado do cliente não foi informado (autor/réu, requerente/requerido, segurado/INSS), deduza pelo documento e diga logo no início qual lado você assumiu e por quê.
+- Se o documento for o PROCESSO INTEIRO (vários eventos/movimentações), não resuma tudo: monte uma linha do tempo curta e foque no ÚLTIMO ATO PENDENTE para o cliente.
+- Avise quais páginas são imagem, print ou documento digitalizado que você não conseguiu ler (a lista vem abaixo, junto com as que foram enviadas como imagem), e se isso pode mudar a análise.
+
+Responda sempre nesta ordem, em Markdown, com cada seção como título de nível 2 exatamente assim: "## 1. IDENTIFICAÇÃO", "## 2. LINHA DO TEMPO", "## 3. EXPLICAÇÃO SIMPLES", "## 4. RESUMO TÉCNICO", "## 5. PRAZO E RISCO", "## 6. PONTOS FORTES E PONTOS FRACOS", "## 7. O QUE FAZER", "## 8. MINUTA". Antes da seção 1 você pode pôr no máximo 3 linhas de avisos (lado assumido, páginas ilegíveis).
+
+1. IDENTIFICAÇÃO
+- Tipo de documento, tribunal/órgão, vara, número do processo/benefício, partes e data.
+- Qual é o ato pendente e para quem ele é dirigido.
+
+2. LINHA DO TEMPO (só se for processo inteiro; caso contrário escreva "Não se aplica — documento avulso.")
+- Os principais eventos em uma linha cada (data, o que aconteceu e o número do evento).
+- Destaque pedidos que ainda não foram decididos pelo juiz.
+
+3. EXPLICAÇÃO SIMPLES
+- Explique como se fosse para uma criança de 7 anos: frases curtas, sem juridiquês, com exemplos do dia a dia.
+
+4. RESUMO TÉCNICO
+- Em linguagem jurídica: o que foi decidido ou pedido, com referência aos eventos/folhas e aos trechos importantes do próprio documento.
+- Resuma os argumentos da parte contrária, se houver.
+
+5. PRAZO E RISCO
+- Prazo, se conta em dias úteis ou corridos e o fundamento legal (ex.: CPC art. 219; Lei 9.099/95 art. 12-A).
+- Data final calculada por você. Antes de calcular, confira certidões de suspensão de prazo, feriados e cancelamento de feriados nos autos. Se a sua conta for diferente da data do sistema, avise e explique por quê. Mostre a contagem (data de início, dias excluídos).
+- Recomende protocolar com pelo menos 1 dia útil de folga.
+- O que acontece se o prazo não for cumprido.
+
+6. PONTOS FORTES E PONTOS FRACOS
+- Os melhores argumentos a nosso favor, com base no que está nos autos.
+- As fragilidades da NOSSA posição: contradições de datas, provas fracas ou faltando, jurisprudência dividida. Diga como reduzir cada uma.
+- Erros ou contradições da parte contrária (defesa genérica, impugnação de pedido que não foi feito, admissões involuntárias).
+
+7. O QUE FAZER
+- Providências em passos numerados, começando pela mais urgente.
+- Checklist de documentos e provas a providenciar com o cliente.
+- Se houver ordem judicial descumprida pela outra parte, diga como provar e cobrar (ex.: multa/astreintes).
+
+8. MINUTA
+- Rascunho da peça adequada (petição, réplica, manifestação, recurso, cumprimento de exigência do INSS), com campos entre [colchetes] para o advogado completar.
+- Use só fatos e documentos que estão nos autos, citando eventos/folhas.
+
+REGRAS
+- Nunca invente artigos de lei, súmulas, jurisprudência, números de processo ou datas. Só cite um precedente se ele estiver nos autos ou se você tiver certeza; nos demais casos escreva [VERIFICAR] e diga o que pesquisar.
+- No previdenciário, considere a legislação atual, incluindo a EC 103/2019 e as regras de transição.
+- Se faltar informação importante para a minuta, faça a minuta marcando as lacunas entre [colchetes] e liste ao final as perguntas que o advogado precisa responder.
+- Se o documento estiver ilegível ou incompleto, avise.
+- Não repita dados pessoais sensíveis (CPF, endereço, dados de saúde) além do necessário; abrevie quando possível.
+- Termine com a linha: "_Esta análise é um apoio e deve ser revisada pelo advogado responsável._"`;
+
+/* ---------- Leitura dos arquivos ---------- */
+const drop = $("drop"), fileIn = $("file");
+drop.addEventListener("click", () => fileIn.click());
+drop.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileIn.click(); } });
+drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
+drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+drop.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("over"); addFiles(e.dataTransfer.files); });
+fileIn.addEventListener("change", () => { addFiles(fileIn.files); fileIn.value = ""; });
+$("pasted").addEventListener("input", refresh);
+
+async function addFiles(list) {
+  for (const f of Array.from(list || [])) {
+    const d = { name: f.name, size: f.size, kind: f.type === "application/pdf" || /\.pdf$/i.test(f.name) ? "pdf" : "img", pages: [], status: "lendo", error: "", file: f, pdf: null };
+    S.docs.push(d); renderFiles();
+    try {
+      if (d.kind === "pdf") await readPdf(d);
+      else { d.pages = [{ n: 1, text: "", isImage: true }]; }
+      d.status = "pronto";
+    } catch (err) {
+      d.status = "erro";
+      d.error = err && err.name === "PasswordException" ? "PDF protegido por senha. Remova a senha e anexe de novo." : "Não consegui abrir este arquivo. Ele pode estar corrompido.";
+    }
+    renderFiles();
+  }
+}
+
+async function readPdf(d) {
+  if (!window.pdfjsLib) throw new Error("pdf.js indisponível");
+  const data = new Uint8Array(await d.file.arrayBuffer());
+  d.pdf = await pdfjsLib.getDocument({ data, isEvalSupported: false }).promise;
+  for (let i = 1; i <= d.pdf.numPages; i++) {
+    const page = await d.pdf.getPage(i);
+    const tc = await page.getTextContent();
+    const text = tc.items.map(it => (it.str || "") + (it.hasEOL ? "\n" : " ")).join("").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+    d.pages.push({ n: i, text, isImage: text.replace(/\s/g, "").length < MIN_TEXT });
+    if (i % 10 === 0) { d.status = `lendo ${i}/${d.pdf.numPages}`; renderFiles(); }
+  }
+}
+
+function renderFiles() {
+  const box = $("files"); box.textContent = "";
+  S.docs.forEach((d, idx) => {
+    const el = document.createElement("div"); el.className = "file";
+    const nm = document.createElement("div"); nm.className = "nm";
+    nm.append(document.createTextNode(d.name));
+    const meta = document.createElement("span"); meta.className = "meta";
+    if (d.status === "erro") meta.textContent = d.error;
+    else if (d.status !== "pronto") meta.textContent = d.status + "…";
+    else if (d.kind === "pdf") {
+      const img = d.pages.filter(p => p.isImage).map(p => p.n);
+      meta.textContent = `${d.pages.length} pág. · ${Math.round(d.size / 1024)} KB`;
+      const a = document.createElement("span"); a.className = "pill ok"; a.textContent = `${d.pages.length - img.length} com texto`;
+      nm.append(meta, document.createElement("br"), a);
+      if (img.length) { const b = document.createElement("span"); b.className = "pill img"; b.textContent = `imagem: ${fmtRanges(img)}`; nm.append(b); }
+    } else { meta.textContent = "foto / imagem"; }
+    if (!nm.contains(meta)) nm.append(meta);
+    const rm = document.createElement("button"); rm.type = "button"; rm.setAttribute("aria-label", "Remover " + d.name); rm.textContent = "×";
+    rm.onclick = () => { S.docs.splice(idx, 1); renderFiles(); };
+    el.append(nm, rm); box.append(el);
+  });
+  refresh();
+}
+
+function fmtRanges(ns) {
+  const out = []; let s = null, p = null;
+  for (const n of ns) { if (s === null) { s = p = n; } else if (n === p + 1) { p = n; } else { out.push(s === p ? s : `${s}–${p}`); s = p = n; } }
+  if (s !== null) out.push(s === p ? s : `${s}–${p}`);
+  return out.join(", ");
+}
+
+function ready() { return S.docs.some(d => d.status === "pronto") || $("pasted").value.trim().length > 20; }
+function refresh() {
+  const ok = ready() && !S.busy;
+  $("go").disabled = !ok || !S.sample;
+  $("copy-prompt").disabled = !ready();
+  $("go-hint").textContent = ready() ? (S.docs.some(d => d.status && d.status.startsWith("lendo")) ? "Ainda lendo arquivos…" : "") : "Anexe um PDF ou cole um texto para começar.";
+  const tot = S.docs.filter(d => d.status === "pronto").reduce((a, d) => a + d.pages.length, 0);
+  const img = S.docs.filter(d => d.status === "pronto").reduce((a, d) => a + d.pages.filter(p => p.isImage).length, 0);
+  $("pg-summary").textContent = tot ? `${tot} página(s) no total${img ? `; ${img} sem texto legível (digitalizadas, prints ou fotos)` : ""}.` : "";
+}
+
+/* ---------- Montagem do pedido ---------- */
+function allPages() {
+  const out = [];
+  S.docs.filter(d => d.status === "pronto").forEach((d, di) => d.pages.forEach(p => out.push({ doc: d, di, ...p })));
+  return out;
+}
+
+function buildDocText() {
+  const pages = allPages();
+  const pasted = $("pasted").value.trim();
+  const label = p => S.docs.length > 1 ? `[Arquivo ${p.di + 1} "${p.doc.name}" — página ${p.n}]` : `[Página ${p.n}]`;
+  const body = p => p.isImage ? "(página sem texto legível: imagem, print ou digitalização)" : p.text;
+  let total = pages.reduce((a, p) => a + body(p).length + 40, 0) + pasted.length;
+  let omitted = [];
+  let keep = new Set(pages.map((_, i) => i));
+  if (total > MAX_DOC_CHARS) {
+    // Processo grande: mantém o início (inicial) e o final (atos recentes) completos; o meio vira trecho curto.
+    keep = new Set(); let budget = MAX_DOC_CHARS - pasted.length - pages.length * 260;
+    let head = Math.min(budget * 0.2, 35000);
+    for (let i = 0; i < pages.length && head > 0; i++) { const l = body(pages[i]).length; if (l > head) break; keep.add(i); head -= l; budget -= l; }
+    for (let i = pages.length - 1; i >= 0 && budget > 0; i--) { if (keep.has(i)) continue; const l = body(pages[i]).length; if (l > budget) break; keep.add(i); budget -= l; }
+  }
+  const parts = pages.map((p, i) => {
+    if (keep.has(i)) return `${label(p)}\n${body(p)}`;
+    omitted.push(label(p));
+    return `${label(p)} [TRECHO — página abreviada por tamanho]\n${body(p).slice(0, 220)}…`;
+  });
+  if (pasted) parts.push(`[Texto colado pelo advogado]\n${pasted}`);
+  return { text: parts.join("\n\n"), omitted, pages };
+}
+
+async function pickImages(pages) {
+  // Renderiza páginas sem texto (e fotos anexadas) para o Claude ler como imagem.
+  const want = pages.filter(p => p.isImage);
+  const blobs = [], sent = [];
+  const max = Math.min(S.imgLimit, MAX_IMG_PAGES);
+  for (const p of want) {
+    if (blobs.length >= max) break;
+    try {
+      let blob;
+      if (p.doc.kind === "img") blob = p.doc.file;
+      else {
+        const page = await p.doc.pdf.getPage(p.n);
+        const v1 = page.getViewport({ scale: 1 });
+        const scale = Math.min(2.2, 1400 / v1.width);
+        const vp = page.getViewport({ scale });
+        const c = document.createElement("canvas"); c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height);
+        await page.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+        blob = await new Promise(r => c.toBlob(r, "image/jpeg", 0.85));
+      }
+      if (blob) { blobs.push(blob); sent.push(S.docs.length > 1 ? `arquivo ${p.di + 1} pág. ${p.n}` : `pág. ${p.n}`); }
+    } catch (_) { /* página que não renderiza fica só na lista de ilegíveis */ }
+  }
+  const notSent = want.length - sent.length;
+  return { blobs, sent, notSent, want };
+}
+
+function context(docInfo, imgInfo) {
+  const lado = (document.querySelector('input[name="lado"]:checked') || {}).value || "";
+  const hoje = new Date();
+  const fmt = d => d.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric" });
+  const intim = $("intim").value ? fmt(new Date($("intim").value + "T12:00:00")) : "não informada (procure nos autos a data de intimação/ciência/leitura)";
+  const linhas = [
+    `Data de hoje: ${fmt(hoje)}.`,
+    `Lado do cliente: ${lado || "NÃO INFORMADO — deduza pelo documento e diga qual lado assumiu."}`,
+    `Rito / órgão: ${$("rito").value || "não informado — deduza do documento."}`,
+    `Data da intimação/ciência informada pelo advogado: ${intim}.`,
+    `Comarca/subseção para feriados locais: ${$("local").value.trim() || "não informada — se for relevante para o prazo, marque [VERIFICAR feriados locais]."}`,
+  ];
+  const obs = $("obs").value.trim();
+  if (obs) linhas.push(`Pedido/observação do advogado: ${obs}`);
+  const ileg = imgInfo.want.map(p => S.docs.length > 1 ? `arquivo ${p.di + 1} pág. ${p.n}` : `pág. ${p.n}`);
+  if (ileg.length) {
+    linhas.push(`Páginas sem texto extraível (imagem/print/digitalizada): ${ileg.join(", ")}.`);
+    linhas.push(imgInfo.sent.length ? `Destas, foram anexadas como imagem para você ler, nesta ordem: ${imgInfo.sent.join(", ")}.${imgInfo.notSent ? ` As outras ${imgInfo.notSent} NÃO foram enviadas — trate-as como não lidas.` : ""}` : "Nenhuma delas foi enviada como imagem — trate-as como não lidas.");
+  }
+  if (docInfo.omitted.length) linhas.push(`Por tamanho, ${docInfo.omitted.length} página(s) do meio dos autos foram abreviadas (marcadas como TRECHO). Diga se alguma delas pode ser decisiva e precisa ser conferida.`);
+  return linhas.join("\n");
+}
+
+async function buildPrompt(withImages) {
+  const docInfo = buildDocText();
+  const imgInfo = withImages && S.imgLimit ? await pickImages(docInfo.pages) : { blobs: [], sent: [], notSent: docInfo.pages.filter(p => p.isImage).length, want: docInfo.pages.filter(p => p.isImage) };
+  const prompt = `${INSTRUCOES}\n\n=== CONTEXTO DO CASO ===\n${context(docInfo, imgInfo)}\n\n=== DOCUMENTO (texto extraído, com marcação de páginas) ===\n${docInfo.text}\n=== FIM DO DOCUMENTO ===\n\nFaça agora a análise completa nas 8 seções.`;
+  return { prompt, images: imgInfo.blobs, imgInfo, docInfo };
+}
+
+/* ---------- Render ---------- */
+let raf = 0, pending = "";
+function render(md) {
+  pending = md;
+  if (raf) return;
+  raf = requestAnimationFrame(() => { raf = 0; paint(pending); });
+}
+function toHtml(md) {
+  const html = window.marked ? marked.parse(md, { gfm: true, breaks: false }) : md.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])).replace(/\n/g, "<br>");
+  return window.DOMPurify ? DOMPurify.sanitize(html) : html.replace(/<script[\s\S]*?<\/script>/gi, "");
+}
+function paint(md) {
+  const out = $("out");
+  out.innerHTML = toHtml(md);
+  out.querySelectorAll("table").forEach(t => { if (!t.parentElement.classList.contains("tbl")) { const w = document.createElement("div"); w.className = "tbl"; t.replaceWith(w); w.append(t); } });
+  const toc = $("toc"); toc.textContent = "";
+  out.querySelectorAll("h2").forEach((h, i) => {
+    h.id = "sec-" + i;
+    const a = document.createElement("a"); a.href = "#sec-" + i;
+    a.textContent = h.textContent.replace(/^\d+\.\s*/, "").toLowerCase().replace(/^./, c => c.toUpperCase());
+    a.onclick = e => { e.preventDefault(); h.scrollIntoView({ behavior: "smooth", block: "start" }); };
+    toc.append(a);
+  });
+}
+
+function setStatus(t, live) { const s = $("status"); s.textContent = ""; if (live) { const d = document.createElement("span"); d.className = "dot"; s.append(d); } s.append(document.createTextNode(t)); }
+function showErr(t) { const e = $("err"); e.hidden = !t; e.textContent = ""; if (t) { const b = document.createElement("b"); b.textContent = "Não foi possível concluir. "; e.append(b, document.createTextNode(t)); } }
+const ERR = {
+  not_granted: "O uso do Claude não foi autorizado nesta página. Autorize no menu de permissões do artefato e recarregue.",
+  sampling_disabled: "O Claude não está disponível para esta conta.",
+  rate_limited: "Limite de uso atingido. Aguarde alguns minutos e tente de novo.",
+  session_expired: "Sua sessão expirou. Entre de novo no claude.ai.",
+  prompt_too_large: "O processo é grande demais para uma análise só. Anexe apenas as últimas peças (a partir da decisão ou intimação pendente).",
+  image_rejected: "Uma das páginas-imagem não foi aceita. Tente anexar o PDF sem as fotos.",
+  images_unavailable: "Esta abertura não envia imagens; as páginas digitalizadas ficaram de fora.",
+  refused: "O pedido foi recusado. Revise o texto colado e tente de novo.",
+  empty_completion: "A resposta veio vazia. Tente de novo com menos páginas.",
+};
+const errMsg = e => ERR[e && e.code] || "Falha de conexão com o Claude. Tente de novo.";
+
+function busy(on) {
+  S.busy = on; $("stop").hidden = !on; $("send").disabled = on;
+  ["copy-all", "copy-min", "dl"].forEach(id => { const b = $(id); if (b) b.hidden = on || !S.analysis; });
+  refresh();
+}
+
+/* ---------- Análise ---------- */
+$("go").onclick = async () => {
+  if (!S.sample || S.busy) return;
+  showErr(""); busy(true);
+  $("empty").hidden = true; $("out").hidden = false; $("out").textContent = ""; $("toc").textContent = "";
+  $("chat").hidden = true; $("qa").textContent = ""; $("trunc").hidden = true;
+  S.analysis = ""; S.turns = [];
+  setStatus("Preparando páginas…", true);
+  let built;
+  try { built = await buildPrompt(true); } catch (_) { built = await buildPrompt(false); }
+  S.lastPrompt = built.prompt;
+  const n = built.images.length;
+  setStatus(`Analisando${n ? ` (${n} página(s) digitalizada(s) enviadas como imagem)` : ""}… isso leva de 30 s a 2 min.`, true);
+  S.ctl = new AbortController();
+  const run = imgs => (0, S.sample)(built.prompt, { modelTier: "complex", signal: S.ctl.signal, images: imgs.length ? imgs : undefined, cache: false,
+    onText: ({ text }) => { S.analysis = text; render(text); setStatus("Escrevendo a análise…", true); } });
+  try {
+    let r;
+    try { r = await run(built.images); }
+    catch (e) { if (n && (e.code === "image_rejected" || e.code === "images_unavailable") && !e.text) { setStatus("Reenviando sem as imagens…", true); r = await run([]); } else throw e; }
+    S.analysis = r.text; paint(r.text);
+    S.turns = [{ role: "user", content: built.prompt + (n ? "\n\n(Nesta primeira mensagem as páginas digitalizadas listadas foram enviadas como imagem.)" : "") }, { role: "assistant", content: r.text }];
+    $("trunc").hidden = !r.truncated;
+    setStatus(`Concluída às ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}${built.docInfo.omitted.length ? ` · ${built.docInfo.omitted.length} pág. abreviadas por tamanho` : ""}.`);
+    $("chat").hidden = false;
+  } catch (e) {
+    if (e && e.code === "refused") { S.analysis = ""; $("out").textContent = ""; }
+    else if (e && e.text) { S.analysis = e.text; paint(e.text); }
+    if (e && e.code === "cancelled") setStatus("Interrompida.");
+    else { setStatus(""); showErr(errMsg(e)); }
+    if (e && e.code === "not_granted") $("go").hidden = true;
+  } finally { busy(false); }
+};
+$("stop").onclick = () => S.ctl && S.ctl.abort();
+
+/* ---------- Perguntas de acompanhamento ---------- */
+async function ask(q, opts = {}) {
+  q = q.trim(); if (!q || !S.sample || S.busy || !S.turns.length) return;
+  showErr(""); busy(true);
+  const wrap = document.createElement("div");
+  const qd = document.createElement("div"); qd.className = "q"; qd.textContent = opts.label || q;
+  const ad = document.createElement("div"); ad.className = "doc";
+  const target = opts.append ? null : ad;
+  if (!opts.append) { wrap.append(qd, ad); $("qa").append(wrap); }
+  setStatus("Pensando…", true);
+  const turns = [...S.turns, { role: "user", content: q }];
+  S.ctl = new AbortController();
+  const base = S.analysis;
+  try {
+    const r = await (0, S.sample)(turns, { modelTier: "complex", cache: false, signal: S.ctl.signal,
+      onText: ({ text }) => { if (target) target.innerHTML = toHtml(text); else { S.analysis = base + text; render(S.analysis); } setStatus("Escrevendo…", true); } });
+    if (opts.append) { S.analysis = base + r.text; paint(S.analysis); S.turns[1] = { role: "assistant", content: S.analysis }; $("trunc").hidden = !r.truncated; }
+    else { target.innerHTML = toHtml(r.text); S.turns.push({ role: "user", content: q }, { role: "assistant", content: r.text }); }
+    setStatus("Pronto.");
+  } catch (e) {
+    if (target) { if (e && e.text) target.innerHTML = toHtml(e.text); else wrap.remove(); }
+    if (e && e.code === "cancelled") setStatus("Interrompida."); else { setStatus(""); showErr(errMsg(e)); }
+  } finally { busy(false); }
+}
+$("send").onclick = () => { const v = $("q").value; $("q").value = ""; ask(v); };
+$("q").addEventListener("keydown", e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) $("send").click(); });
+$("chips").addEventListener("click", e => { if (e.target.tagName === "BUTTON") ask(e.target.textContent); });
+$("cont").onclick = () => ask("Sua resposta anterior foi cortada. Continue exatamente de onde parou, sem repetir o que já escreveu.", { append: true });
+
+/* ---------- Copiar / baixar ---------- */
+async function copy(text, btn) {
+  const old = btn.textContent;
+  try { await navigator.clipboard.writeText(text); btn.textContent = "Copiado"; }
+  catch (_) {
+    const ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.append(ta); ta.select();
+    let ok = false; try { ok = document.execCommand("copy"); } catch (_) {}
+    ta.remove(); btn.textContent = ok ? "Copiado" : "Selecione e copie manualmente";
+  }
+  setTimeout(() => btn.textContent = old, 1800);
+}
+function minuta() { const m = S.analysis.search(/^#{1,3}\s*8\.?\s*MINUTA/im); return m >= 0 ? S.analysis.slice(m) : S.analysis; }
+$("copy-all").onclick = e => copy(S.analysis, e.currentTarget);
+$("copy-min").onclick = e => copy(minuta(), e.currentTarget);
+$("copy-prompt").onclick = async e => {
+  const btn = e.currentTarget;
+  const { prompt } = await buildPrompt(false).catch(() => ({ prompt: "" }));
+  if (prompt) copy(prompt, btn);
+};
+$("dl").onclick = async () => {
+  const dl = window.claude ? await claude.use("downloads") : null;
+  if (!dl) return;
+  const base = (S.docs[0] && S.docs[0].name.replace(/\.[^.]+$/, "")) || "analise";
+  try { await dl.save({ filename: `analise-${base}.md`, data: S.analysis }); } catch (_) {}
+};
+
+/* ---------- Capacidades ---------- */
+(async () => {
+  const s = window.claude && typeof claude.use === "function" ? await claude.use("sample").catch(() => null) : null;
+  if (!s) { $("no-claude").hidden = false; $("go").hidden = true; refresh(); return; }
+  S.sample = s;
+  const lim = await s.limits().catch(() => null);
+  S.imgLimit = lim && lim.images ? lim.images.maxCount : 0;
+  refresh();
+  const dl = await claude.use("downloads").catch(() => null);
+  if (!dl) $("dl").remove();
+})();
+if (!window.pdfjsLib) { const n = $("drop-desc"); n.textContent = "O leitor de PDF não carregou. Cole o texto abaixo ou recarregue a página."; }
+refresh();
+})();
+</script>
+
+</body></html>

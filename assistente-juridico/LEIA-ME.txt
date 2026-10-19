@@ -1,0 +1,22 @@
+MESA DE ANÁLISE PROCESSUAL — assistente jurídico (Previdenciário, Cível, Consumidor)
+
+COMO USAR
+- Versão completa (com análise pelo Claude): abra o link do artefato no claude.ai:
+  https://claude.ai/artifact/CmRHNKH6hgYHUCAir246gu
+- Anexe o PDF (processo inteiro, intimação, decisão ou carta do INSS), escolha o lado
+  do cliente, informe a data da intimação e a comarca, e toque em "Analisar documento".
+- A resposta segue: 1 Identificação, 2 Linha do tempo, 3 Explicação simples,
+  4 Resumo técnico, 5 Prazo e risco, 6 Pontos fortes e fracos, 7 O que fazer, 8 Minuta.
+- Depois, use "Perguntar sobre estes autos" para refazer a minuta, conferir o prazo etc.
+
+ARQUIVOS
+- pagina.html : fonte publicada como artefato no claude.ai.
+- index.html  : mesma página para abrir fora do claude.ai. Fora dele a análise automática
+                não funciona, mas o PDF é lido e o botão "Copiar pedido completo" gera o
+                texto para colar numa conversa com o Claude.
+
+PÁGINAS DIGITALIZADAS
+- Páginas sem texto (scans, prints, fotos) são marcadas. Até 8 delas são enviadas como
+  imagem para leitura; as demais aparecem como "não lidas" na análise.
+
+A análise é apoio e deve ser revisada pelo advogado responsável.
