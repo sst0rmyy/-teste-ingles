@@ -652,7 +652,7 @@ async function iniciar(){
   }
   if(db){
     db.collection("procuracoes").onSnapshot(snap=>{
-      const novo={}; snap.docs.forEach(d=>{ const x=d.data(); if(x) novo[d.id]=x; });
+      const novo={}; snap.docs.forEach(d=>{ const x=d.data(); if(x) novo[d.id]=JSON.parse(JSON.stringify(x)); });
       // preserva o que está sendo editado e ainda não foi gravado
       // mantém a cópia local quando ela é mais nova que a do servidor (eco atrasado de gravação anterior)
       sujo.forEach(id=>{ if(arquivo[id]) novo[id]=arquivo[id]; });
@@ -663,7 +663,7 @@ async function iniciar(){
       else if(mudouAtual && !(document.activeElement && document.activeElement.closest && document.activeElement.closest(".mesa"))) redesenha();
       estado("Biblioteca compartilhada · "+Object.keys(arquivo).length+" procuração(ões)");
     }, err=>estado("Biblioteca indisponível: "+err.message));
-    db.doc("config/cartorio").onSnapshot(s=>{ const d=s.data(); escreventes=(d&&d.escreventes)||[]; if(etapa==="ato" && atual) renderMesa(); }, ()=>{});
+    db.doc("config/cartorio").onSnapshot(s=>{ const d=s.data(); escreventes=d&&d.escreventes ? JSON.parse(JSON.stringify(d.escreventes)) : []; if(etapa==="ato" && atual) renderMesa(); }, ()=>{});
   } else {
     modoLocal = true; arquivo = lsLer();
     try{ escreventes = JSON.parse(localStorage.getItem(LS_KEY+"-esc")||"[]"); }catch(e){ escreventes=[]; }
@@ -843,13 +843,10 @@ function renderMesa(){
 function painel(r){
   if(etapa==="ato"){
     let h='<section class="bloco"><h3>Dados do ato</h3><div class="grade">';
+    h+='<label class="f">Tipo de procuração<select id="f-modelo" data-troca="1">'+N.MODELOS.map(m=>'<option value="'+m.id+'"'+(m.id===r.modelo?" selected":"")+'>'+H(m.nome+" · "+m.sub)+'</option>').join("")+'</select><span class="dica">Trocar aplica os poderes e o tipo de parte do novo modelo; os dados já digitados são mantidos.</span></label>';
     h+=campo("ato.data","Data do ato",{tipo:"date",req:1,dica:r.ato.data?extensoTxt(r.ato.data):""});
     h+=campo("status","Situação",{opts:[["rascunho","Rascunho"],["conferida","Conferida"],["lavrada","Lavrada"]]});
     h+='</div></section>';
-    const mAtual=N.MODELOS.find(x=>x.id===r.modelo);
-    h+='<section class="bloco"><div class="bloco-topo"><h3>Tipo de procuração</h3><span class="aviso">Atual: <b>'+H(mAtual?mAtual.nome+" · "+mAtual.sub:r.tipo)+'</b></span></div>'+
-      '<div class="biblio">'+N.MODELOS.map(m=>'<button type="button" class="chip'+(m.id===r.modelo?" on":"")+'" data-acao="trocarModelo" data-m="'+m.id+'">'+H(m.nome)+' · '+H(m.sub)+'</button>').join("")+'</div>'+
-      '<span class="aviso">Trocar o tipo substitui os poderes e o tipo de parte (pessoa física ou CNPJ) pelos do novo modelo. Os dados já digitados das pessoas e empresas são mantidos.</span></section>';
     h+='<section class="bloco"><div class="bloco-topo"><h3>Escrevente que lavra</h3></div>';
     if(escreventes.length) h+='<div class="biblio">'+escreventes.map((e,i)=>'<button type="button" class="chip'+(r.ato.escNome===e.nome?" on":"")+'" data-acao="usarEsc" data-i="'+i+'">'+H(e.nome)+' · '+H(e.cargo)+'</button>').join("")+'</div>';
     h+='<div class="grade">'+campo("ato.escNome","Nome completo",{req:1})+campo("ato.escCargo","Cargo",{req:1,list:"cargos",dica:"Entra como \"perante mim, [cargo] da Tabeliã…\""})+'</div>';
@@ -919,7 +916,10 @@ mesa.addEventListener("input",e=>{
   salvarDepois(atual);
 });
 mesa.addEventListener("change",e=>{
-  const el=e.target; if(!el.dataset.p||!atual) return;
+  const el=e.target; if(!atual || !arquivo[atual]) return;
+  if(el.dataset.troca){ aplicarModelo(arquivo[atual], el.value); salvarDepois(atual); setTimeout(()=>{ redesenha(); renderLista(); },0); return; }
+  if(!el.dataset.p) return;
+  if(el.tagName==="SELECT" && get(arquivo[atual], el.dataset.p)!==el.value){ set(arquivo[atual], el.dataset.p, el.value); salvarDepois(atual); }
   // estrutura muda (selects) ou campos validados: redesenha preservando foco/rolagem
   if(el.tagName==="SELECT" || el.dataset.mask || el.type==="date"){ setTimeout(()=>{ redesenha(); renderLista(); },0); }
 });
@@ -939,16 +939,6 @@ mesa.addEventListener("click",e=>{
   else if(ac==="rmPoder"){ r.poderes.splice(i,1); }
   else if(ac==="sobe" && i>0){ const t=r.poderes[i]; r.poderes[i]=r.poderes[i-1]; r.poderes[i-1]=t; }
   else if(ac==="desce" && i<r.poderes.length-1){ const t=r.poderes[i]; r.poderes[i]=r.poderes[i+1]; r.poderes[i+1]=t; }
-  else if(ac==="trocarModelo"){
-    const m=N.MODELOS.find(x=>x.id===b.dataset.m); if(!m || m.id===r.modelo) return;
-    const antigos={}; r.poderes.forEach(pd=>{ if(!antigos[pd.k]) antigos[pd.k]=pd; });
-    r.modelo=m.id; r.tipo=m.tipo; r.intro=m.intro;
-    r.poderes=m.poderes.map(k=>antigos[k]||{k, titulo:N.PODERES[k].titulo, v:{}});
-    if(r.outorgantes[0]) r.outorgantes[0].tp=m.ot;
-    if(r.outorgados[0]){ r.outorgados[0].tp=m.od; if(m.odDoc && !r.outorgados[0].pf.docTipo) r.outorgados[0].pf.docTipo=m.odDoc; }
-    r.fichaOk=false; if(r.status==="conferida") r.status="rascunho";
-    toast("Tipo alterado para "+m.nome+" · "+m.sub);
-  }
   else if(ac==="flag"){ r.flags[b.dataset.k]=!r.flags[b.dataset.k]; }
   else if(ac==="usarEsc"){ const x=escreventes[i]; r.ato.escNome=x.nome; r.ato.escCargo=x.cargo; }
   else if(ac==="salvarEsc"){ if(N.vazio(r.ato.escNome)||N.vazio(r.ato.escCargo)){ toast("Preencha nome e cargo do escrevente"); return; }
@@ -961,6 +951,16 @@ mesa.addEventListener("click",e=>{
   else if(ac==="copiar"){ const t=N.textoPlano(N.montar(r)); (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Texto copiado"),()=>toast("Não foi possível copiar; selecione o texto da minuta")); return; }
   salvarDepois(atual); redesenha();
 });
+function aplicarModelo(r, id){
+  const m=N.MODELOS.find(x=>x.id===id); if(!m || m.id===r.modelo) return;
+  const antigos={}; r.poderes.forEach(pd=>{ if(!antigos[pd.k]) antigos[pd.k]=pd; });
+  r.modelo=m.id; r.tipo=m.tipo; r.intro=m.intro;
+  r.poderes=m.poderes.map(k=>antigos[k]||{k, titulo:N.PODERES[k].titulo, v:{}});
+  if(r.outorgantes[0]) r.outorgantes[0].tp=m.ot;
+  if(r.outorgados[0]){ r.outorgados[0].tp=m.od; if(m.odDoc && !r.outorgados[0].pf.docTipo) r.outorgados[0].pf.docTipo=m.odDoc; }
+  r.fichaOk=false; if(r.status==="conferida") r.status="rascunho";
+  toast("Tipo alterado para "+m.nome+" · "+m.sub);
+}
 function redesenha(){
   const y=window.scrollY, foco=document.activeElement && document.activeElement.id;
   renderMesa(); window.scrollTo(0,y);
