@@ -35,6 +35,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .marca-txt b{font:600 17px/1.2 var(--f-titulo);letter-spacing:.01em;color:var(--marinho)}
 .marca-txt small{font-size:11.5px;color:var(--sobre-marinho-2);letter-spacing:.03em}
 .sinc{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--sobre-marinho-2)}
+.barra-dir{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .sinc::before{content:"";width:7px;height:7px;border-radius:50%;background:#22a05a;flex:none}
 .sinc[data-t="aviso"]::before{background:#e0a127} .sinc[data-t="erro"]::before{background:#d92d20}
 
@@ -175,7 +176,7 @@ label.f.erro .dica{color:var(--at)}
 
 <header class="barra">
   <div class="marca"><span class="selo" aria-hidden="true">TN</span><span class="marca-txt"><b>Livro de Procurações</b><small>Tabeliã de Notas e de Protesto · Espírito Santo do Pinhal-SP</small></span></div>
-  <div class="sinc" id="estado">Conectando à biblioteca…</div>
+  <div class="barra-dir"><div class="sinc" id="estado">Conectando à biblioteca…</div><button type="button" class="mini" id="bt-sair" hidden>Sair</button></div>
 </header>
 <div class="app">
   <aside class="arquivo" aria-label="Biblioteca">
@@ -190,6 +191,7 @@ label.f.erro .dica{color:var(--at)}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>/* sem internet: usa a cópia local do servidor do cartório */ if(!window.JSZip && /^https?:$/.test(location.protocol)) document.write('<script src="/vendor/jszip.min.js"><\/script>');</script>
 <script id="nucleo">
 /* ===== Núcleo: redação da minuta, conferência e .docx (sem DOM) ===== */
 var N = (function(){
@@ -683,24 +685,46 @@ function lsLer(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||"{}"); }c
 function lsGravar(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(arquivo)); }catch(e){} }
 
 /* ---- persistência ---- */
+// Três modos: biblioteca do Claude (db), servidor do cartório (api/) ou só este navegador.
+let servidor = false;
+const API = async (metodo, url, corpo) => {
+  const r = await fetch(url, {method:metodo, credentials:"same-origin", headers:{"Content-Type":"application/json","X-Livro":"1"}, body: corpo===undefined ? undefined : JSON.stringify(corpo)});
+  if(r.status===401){ location.href="/login"; throw new Error("sessão expirada"); }
+  if(!r.ok){ const d=await r.json().catch(()=>({})); throw new Error(d.erro || "erro "+r.status); }
+  return r.json();
+};
+const hora = () => new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
 let fila = Promise.resolve(), timer = null, sujo = new Set();
 function salvarDepois(id){ if(arquivo[id]) arquivo[id].atualizadoEm=new Date().toISOString(); sujo.add(id); clearTimeout(timer); timer=setTimeout(descarregar, 700); estado("Salvando…"); }
 function descarregar(){
   const ids=[...sujo]; sujo.clear();
+  const falhou = e => estado("Não foi possível salvar: "+(e&&e.message||"erro")+". Suas alterações continuam na tela.");
   ids.forEach(id=>{ const reg=arquivo[id]; if(!reg) return;
-    if(db) fila = fila.then(()=>db.collection("procuracoes").doc(id).set(JSON.parse(JSON.stringify(reg)))).then(()=>estado("Arquivado na biblioteca às "+new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}))).catch(e=>estado("Não foi possível salvar: "+(e&&e.message||"erro")+". Suas alterações continuam na tela."));
+    if(db) fila = fila.then(()=>db.collection("procuracoes").doc(id).set(JSON.parse(JSON.stringify(reg)))).then(()=>estado("Arquivado na biblioteca às "+hora())).catch(falhou);
+    else if(servidor) fila = fila.then(()=>API("PUT","/api/procuracoes/"+id,reg)).then(()=>estado("Arquivado no servidor do cartório às "+hora())).catch(e=>{ sujo.add(id); falhou(e); });
   });
-  if(!db){ lsGravar(); estado("Salvo neste navegador às "+new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})); }
+  if(modoLocal){ lsGravar(); estado("Salvo neste navegador às "+hora()); }
   renderLista();
 }
 function excluir(id){
   delete arquivo[id];
   if(db) fila = fila.then(()=>db.collection("procuracoes").doc(id).delete()).catch(()=>{});
+  else if(servidor) fila = fila.then(()=>API("DELETE","/api/procuracoes/"+id)).catch(e=>toast("Não foi possível excluir: "+e.message));
   else lsGravar();
   if(atual===id){ atual=null; }
   renderLista(); renderMesa(); toast("Procuração excluída");
 }
-function estado(t){ const el=$("#estado"); el.textContent = t; el.dataset.t = /Não foi|indisponível/.test(t) ? "erro" : (/Salvando|Conectando|Modo local/.test(t) ? "aviso" : "ok"); }
+function estado(t){ const el=$("#estado"); el.textContent = t; el.dataset.t = /Não foi|indisponível|desconectado/.test(t) ? "erro" : (/Salvando|Conectando|Modo local|Reconectando/.test(t) ? "aviso" : "ok"); }
+
+// recebe a lista vinda de fora sem perder o que está sendo digitado aqui
+function aplicarRemoto(novo){
+  sujo.forEach(id=>{ if(arquivo[id]) novo[id]=arquivo[id]; });
+  Object.keys(novo).forEach(id=>{ const loc=arquivo[id]; if(loc && String(loc.atualizadoEm||"")>String(novo[id].atualizadoEm||"")) novo[id]=loc; });
+  const mudouAtual = atual && arquivo[atual] && novo[atual] && JSON.stringify(novo[atual])!==JSON.stringify(arquivo[atual]);
+  arquivo=novo; renderLista();
+  if(atual && !arquivo[atual]){ atual=null; renderMesa(); }
+  else if(mudouAtual && !(document.activeElement && document.activeElement.closest && document.activeElement.closest(".mesa"))) redesenha();
+}
 
 async function iniciar(){
   renderLista(); renderMesa();
@@ -712,26 +736,46 @@ async function iniciar(){
   if(db){
     db.collection("procuracoes").onSnapshot(snap=>{
       const novo={}; snap.docs.forEach(d=>{ const x=d.data(); if(x) novo[d.id]=JSON.parse(JSON.stringify(x)); });
-      // preserva o que está sendo editado e ainda não foi gravado
-      // mantém a cópia local quando ela é mais nova que a do servidor (eco atrasado de gravação anterior)
-      sujo.forEach(id=>{ if(arquivo[id]) novo[id]=arquivo[id]; });
-      Object.keys(novo).forEach(id=>{ const loc=arquivo[id]; if(loc && String(loc.atualizadoEm||"")>String(novo[id].atualizadoEm||"")) novo[id]=loc; });
-      const mudouAtual = atual && arquivo[atual] && novo[atual] && novo[atual]!==arquivo[atual];
-      arquivo=novo; renderLista();
-      if(atual && !arquivo[atual]){ atual=null; renderMesa(); }
-      else if(mudouAtual && !(document.activeElement && document.activeElement.closest && document.activeElement.closest(".mesa"))) redesenha();
+      aplicarRemoto(novo);
       estado("Biblioteca compartilhada · "+Object.keys(arquivo).length+" procuração(ões)");
     }, err=>estado("Biblioteca indisponível: "+err.message));
     db.doc("config/cartorio").onSnapshot(s=>{ const d=s.data(); escreventes=d&&d.escreventes ? JSON.parse(JSON.stringify(d.escreventes)) : []; if(etapa==="ato" && atual) renderMesa(); }, ()=>{});
-  } else {
-    modoLocal = true; arquivo = lsLer();
-    try{ escreventes = JSON.parse(localStorage.getItem(LS_KEY+"-esc")||"[]"); }catch(e){ escreventes=[]; }
-    estado("Modo local: as procurações ficam salvas apenas neste navegador.");
-    renderLista(); renderMesa();
+    return;
   }
+  // servidor do cartório?
+  if(/^https?:$/.test(location.protocol)){
+    try{ const r=await fetch("/api/sessao",{credentials:"same-origin"});
+      if(r.status===401){ location.href="/login"; return; }
+      if(r.ok && (await r.json()).ok) servidor=true;
+    }catch(e){}
+  }
+  if(servidor){ iniciarServidor(); return; }
+  modoLocal = true; arquivo = lsLer();
+  try{ escreventes = JSON.parse(localStorage.getItem(LS_KEY+"-esc")||"[]"); }catch(e){ escreventes=[]; }
+  estado("Modo local: as procurações ficam salvas apenas neste navegador.");
+  renderLista(); renderMesa();
+}
+async function iniciarServidor(){
+  const l=document.createElement("link"); l.rel="manifest"; l.href="/manifest.webmanifest"; document.head.appendChild(l);
+  const sair=$("#bt-sair"); sair.hidden=false;
+  sair.addEventListener("click", async()=>{ try{ await API("POST","/api/sair",{}); }catch(e){} location.href="/login"; });
+  let espera=null;
+  const recarregar = async () => {
+    try{
+      aplicarRemoto(await API("GET","/api/procuracoes"));
+      const c=await API("GET","/api/cartorio"); escreventes=c.escreventes||[];
+      estado("Servidor do cartório · "+Object.keys(arquivo).length+" procuração(ões)");
+    }catch(e){ estado("Servidor desconectado: "+e.message); }
+  };
+  await recarregar(); renderMesa();
+  const ev = new EventSource("/api/eventos");
+  ev.onmessage = () => { clearTimeout(espera); espera=setTimeout(recarregar, 300); };
+  ev.onerror = () => estado("Reconectando ao servidor do cartório…");
+  ev.onopen = () => recarregar();
 }
 function salvarEscreventes(){
   if(db) db.doc("config/cartorio").set({escreventes}).catch(()=>toast("Não foi possível salvar o cadastro"));
+  else if(servidor) API("PUT","/api/cartorio",{escreventes}).catch(()=>toast("Não foi possível salvar o cadastro"));
   else try{ localStorage.setItem(LS_KEY+"-esc", JSON.stringify(escreventes)); }catch(e){}
 }
 
