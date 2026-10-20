@@ -5,51 +5,37 @@
 <style>
 /* Layout: barra institucional no topo; biblioteca (fichário) à esquerda; mesa de trabalho com etapas numeradas e folha A4 de pré-visualização. */
 :root{
-  --fundo:#eef1f5; --painel:#ffffff; --painel-2:#f7f9fb; --linha:#d9dee6; --linha-forte:#c3cad5;
+  --fundo:#f7f9fc; --painel:#ffffff; --painel-2:#f9fbfd; --linha:#e4e8ef; --linha-forte:#cfd6e0;
   --texto:#18212f; --texto-2:#566173; --texto-3:#7c8696;
-  --marinho:#13294b; --marinho-2:#1d3a66; --sobre-marinho:#ffffff; --sobre-marinho-2:#b9c6da;
-  --acento:#1f5bb5; --acento-suave:#e6eefa;
+  --marinho:#13294b; --marinho-2:#24497f; --sobre-marinho:#ffffff; --sobre-marinho-2:#5b6b82;
+  --acento:#2563c9; --acento-suave:#edf3fd;
   --ok:#17663b; --ok-suave:#e3f3ea; --pend:#8a5300; --pend-suave:#fcf0d9; --at:#b42318; --at-suave:#fdeceb;
-  --mesa-folha:#dfe3ea; --sombra:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
+  --mesa-folha:#eceff4; --sombra:0 1px 2px rgba(16,24,40,.04);
   --f-titulo:"IBM Plex Serif", Georgia, "Times New Roman", serif;
   --f-corpo:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-dado:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
   --f-minuta: Tahoma, Verdana, "DejaVu Sans", sans-serif;
-  --raio:6px;
+  --raio:6px; color-scheme:light;
 }
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --fundo:#0f141b; --painel:#171d26; --painel-2:#1c2330; --linha:#2a3341; --linha-forte:#3a4556;
-  --texto:#e7ebf1; --texto-2:#a7b1c0; --texto-3:#7f8a9b;
-  --marinho:#0b1a30; --marinho-2:#16294a; --sobre-marinho:#f2f5fa; --sobre-marinho-2:#93a5c2;
-  --acento:#7aa7ec; --acento-suave:#1b2a42;
-  --ok:#74d39b; --ok-suave:#15301f; --pend:#f2c26b; --pend-suave:#352a14; --at:#f59a92; --at-suave:#3b1d1b;
-  --mesa-folha:#0b0f15; --sombra:0 1px 3px rgba(0,0,0,.4); color-scheme:dark}}
-:root[data-theme="dark"]{
-  --fundo:#0f141b; --painel:#171d26; --painel-2:#1c2330; --linha:#2a3341; --linha-forte:#3a4556;
-  --texto:#e7ebf1; --texto-2:#a7b1c0; --texto-3:#7f8a9b;
-  --marinho:#0b1a30; --marinho-2:#16294a; --sobre-marinho:#f2f5fa; --sobre-marinho-2:#93a5c2;
-  --acento:#7aa7ec; --acento-suave:#1b2a42;
-  --ok:#74d39b; --ok-suave:#15301f; --pend:#f2c26b; --pend-suave:#352a14; --at:#f59a92; --at-suave:#3b1d1b;
-  --mesa-folha:#0b0f15; --sombra:0 1px 3px rgba(0,0,0,.4); color-scheme:dark}
 *{box-sizing:border-box}
 html,body{min-height:100%}
 body{background:var(--fundo);color:var(--texto);font:14px/1.5 var(--f-corpo);margin:0;-webkit-font-smoothing:antialiased}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--marinho)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--painel)}
 table{font-size:inherit}
 button,input,select,textarea{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--acento);outline-offset:2px}
 
 /* barra institucional */
-.barra{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--marinho);color:var(--sobre-marinho);
+.barra{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--painel);color:var(--texto);border-bottom:1px solid var(--linha);
   padding:10px max(16px, env(safe-area-inset-right,0px)) 10px max(16px, env(safe-area-inset-left,0px));display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap}
 .marca{display:flex;align-items:center;gap:12px;min-width:0}
-.selo{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--sobre-marinho-2);display:grid;place-items:center;font:600 13px/1 var(--f-titulo);letter-spacing:.04em;flex:none}
+.selo{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--marinho-2);color:var(--marinho-2);display:grid;place-items:center;font:600 13px/1 var(--f-titulo);letter-spacing:.04em;flex:none}
 .marca-txt{display:flex;flex-direction:column;min-width:0}
-.marca-txt b{font:600 17px/1.2 var(--f-titulo);letter-spacing:.01em}
+.marca-txt b{font:600 17px/1.2 var(--f-titulo);letter-spacing:.01em;color:var(--marinho)}
 .marca-txt small{font-size:11.5px;color:var(--sobre-marinho-2);letter-spacing:.03em}
 .sinc{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--sobre-marinho-2)}
-.sinc::before{content:"";width:7px;height:7px;border-radius:50%;background:#4cc38a;flex:none}
-.sinc[data-t="aviso"]::before{background:#f2c26b} .sinc[data-t="erro"]::before{background:#f07a70}
+.sinc::before{content:"";width:7px;height:7px;border-radius:50%;background:#22a05a;flex:none}
+.sinc[data-t="aviso"]::before{background:#e0a127} .sinc[data-t="erro"]::before{background:#d92d20}
 
 /* estrutura */
 .app{display:grid;grid-template-columns:330px minmax(0,1fr);min-height:calc(100vh - 56px);
@@ -108,17 +94,17 @@ h3{font:600 12px/1.3 var(--f-corpo);letter-spacing:.08em;text-transform:uppercas
 .modelo span{font-size:12.5px;color:var(--texto-2)}
 .modelo .tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
 
-/* etapas */
-.etapas{display:flex;gap:0;overflow-x:auto;background:var(--painel);border:1px solid var(--linha);border-radius:var(--raio);box-shadow:var(--sombra)}
-.etapas button{flex:1 1 0;min-width:130px;border:0;border-right:1px solid var(--linha);background:none;padding:10px 12px;cursor:pointer;color:var(--texto-2);display:flex;align-items:center;gap:9px;text-align:left;font-weight:500;font-size:13px;position:relative}
-.etapas button:last-child{border-right:0}
-.etapas button:hover{background:var(--painel-2)}
-.etapas button.on{color:var(--texto);background:var(--acento-suave)}
-.etapas button.on::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--acento)}
-.etapas .n{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:600 11px var(--f-dado);border:1.5px solid var(--linha-forte);color:var(--texto-2);flex:none}
+/* etapas: coluna estreita à esquerda do formulário */
+.trabalho{display:grid;grid-template-columns:168px minmax(0,1fr);gap:20px;align-items:start}
+.etapas{position:sticky;top:calc(72px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;background:var(--painel);border:1px solid var(--linha);border-radius:var(--raio);padding:6px}
+.etapas button{border:0;background:none;padding:6px 8px;border-radius:4px;cursor:pointer;color:var(--texto-2);display:flex;align-items:center;gap:8px;text-align:left;font-weight:500;font-size:12.5px;line-height:1.25}
+.etapas button:hover{background:var(--painel-2);color:var(--texto)}
+.etapas button.on{color:var(--acento);background:var(--acento-suave);font-weight:600}
+.etapas .n{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font:600 10px var(--f-dado);border:1.5px solid var(--linha-forte);color:var(--texto-3);flex:none}
 .etapas button.on .n{border-color:var(--acento);color:var(--acento)}
 .etapas button.feita .n{background:var(--ok);border-color:var(--ok);color:#fff}
-.etapas .q{margin-left:auto;font:600 10.5px var(--f-dado);color:var(--pend);background:var(--pend-suave);border-radius:3px;padding:1px 5px}
+.etapas .q{margin-left:auto;font:600 10px var(--f-dado);color:var(--pend);background:var(--pend-suave);border-radius:3px;padding:0 4px}
+@media (max-width:700px){.trabalho{grid-template-columns:minmax(0,1fr)} .etapas{position:static;flex-direction:row;overflow-x:auto} .etapas button{white-space:nowrap}}
 
 /* formulários */
 .painel{display:flex;flex-direction:column;gap:16px}
@@ -137,7 +123,7 @@ label.f input,label.f select,label.f textarea{font-weight:400;font-size:14px;col
 label.f input:focus,label.f select:focus,label.f textarea:focus{border-color:var(--acento);outline:none;box-shadow:0 0 0 3px var(--acento-suave)}
 label.f textarea{min-height:76px;resize:vertical}
 label.f.dado input{font-family:var(--f-dado);font-size:13.5px}
-label.f.falta input,label.f.falta select,label.f.falta textarea{background:var(--pend-suave);border-color:var(--pend-suave)}
+label.f.falta input,label.f.falta select,label.f.falta textarea{background:#fffbf3;border-color:#ecd7a6}
 label.f.falta input:focus,label.f.falta select:focus{background:var(--painel)}
 label.f.erro input{border-color:var(--at);background:var(--at-suave)}
 label.f .dica{font-weight:400;font-size:11.5px;color:var(--texto-3)}
@@ -145,7 +131,7 @@ label.f.erro .dica{color:var(--at)}
 .seg{display:inline-flex;border:1px solid var(--linha-forte);border-radius:var(--raio);overflow:hidden;background:var(--painel);flex-wrap:wrap}
 .seg button{border:0;border-right:1px solid var(--linha);background:none;padding:6px 12px;cursor:pointer;font-size:13px;color:var(--texto-2)}
 .seg button:last-child{border-right:0}
-.seg button.on{background:var(--marinho-2);color:var(--sobre-marinho)}
+.seg button.on{background:var(--acento-suave);color:var(--acento);font-weight:600}
 .sub{border:1px solid var(--linha);background:var(--painel-2);border-radius:var(--raio);padding:12px 14px;display:flex;flex-direction:column;gap:12px}
 .poder{border:1px solid var(--linha);border-radius:var(--raio);padding:12px 14px;display:flex;flex-direction:column;gap:10px;background:var(--painel-2)}
 .poder-topo{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
@@ -181,9 +167,9 @@ label.f.erro .dica{color:var(--at)}
 .folha .corpo{text-align:justify}
 .folha .ass{text-align:center;margin-top:24px}
 .folha mark{background:#fff2a8;color:#111}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--marinho);color:var(--sobre-marinho);padding:9px 16px;border-radius:var(--raio);font-size:13.5px;z-index:20;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--marinho-2);color:var(--sobre-marinho);padding:9px 16px;border-radius:var(--raio);font-size:13.5px;z-index:20;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 @media (prefers-reduced-motion:no-preference){.item,.modelo,.btn,.chip{transition:background-color .15s,border-color .15s}}
-@media (max-width:560px){.resumo{grid-template-columns:minmax(0,1fr)} .etapas button{min-width:118px} .barra{position:static} .marca-txt small{display:none} .mesa-folha{padding:12px 8px} .folha{padding:32px 14px 18px 18px}}
+@media (max-width:560px){.resumo{grid-template-columns:minmax(0,1fr)} .barra{position:static} .marca-txt small{display:none} .mesa-folha{padding:12px 8px} .folha{padding:32px 14px 18px 18px}}
 </style>
 
 <header class="barra">
@@ -912,9 +898,9 @@ function renderMesa(){
     '<button type="button" class="btn" data-acao="duplicar">Duplicar</button>'+
     '<button type="button" class="btn perigo" data-acao="excluir">Excluir</button></div></div>';
   const faltas=faltasPorEtapa(r);
-  h+='<nav class="etapas" aria-label="Etapas">'+ETAPAS.map(([k,l],i)=>{ const q=faltas[k]; const feita=k!=="conferencia" && q===0 || (k==="conferencia" && r.fichaOk);
+  h+='<div class="trabalho"><nav class="etapas" aria-label="Etapas">'+ETAPAS.map(([k,l],i)=>{ const q=faltas[k]; const feita=k!=="conferencia" && q===0 || (k==="conferencia" && r.fichaOk);
     return '<button type="button" data-etapa="'+k+'" class="'+(etapa===k?"on ":"")+(feita?"feita":"")+'"'+(etapa===k?' aria-current="step"':'')+'><span class="n">'+(feita?"✓":(i+1))+'</span>'+l+(q&&k!=="conferencia"?'<span class="q" title="itens pendentes">'+q+'</span>':'')+'</button>'; }).join("")+'</nav>';
-  h+='<div class="painel">'+painel(r)+'</div>';
+  h+='<div class="painel">'+painel(r)+'</div></div>';
   mesa.innerHTML=h;
 }
 function faltasPorEtapa(r){
