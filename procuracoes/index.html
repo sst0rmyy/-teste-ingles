@@ -1175,7 +1175,15 @@ mesa.addEventListener("change",e=>{
   if(!el.dataset.p) return;
   if(el.tagName==="SELECT" && get(arquivo[atual], el.dataset.p)!==el.value){ set(arquivo[atual], el.dataset.p, el.value); salvarDepois(atual); }
   // estrutura muda (selects) ou campos validados: redesenha preservando foco/rolagem
-  if(el.tagName==="SELECT" || el.dataset.mask || el.type==="date"){ setTimeout(()=>{ redesenha(); renderLista(); },0); }
+  // datas: o navegador dispara "change" a cada dígito do ano; redesenhar ali joga o cursor de volta para o dia.
+  // Por isso a data só atualiza a tela quando o campo perde o foco.
+  if(el.type==="date"){ set(arquivo[atual], el.dataset.p, el.value); dataPendente=true; return; }
+  if(el.tagName==="SELECT" || el.dataset.mask){ setTimeout(()=>{ redesenha(); renderLista(); },0); }
+});
+let dataPendente=false;
+mesa.addEventListener("focusout",e=>{
+  if(e.target.type!=="date" || !dataPendente) return;
+  dataPendente=false; setTimeout(()=>{ redesenha(); renderLista(); },0);
 });
 mesa.addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b) return;
@@ -1220,10 +1228,11 @@ function aplicarModelo(r, id){
 }
 function redesenha(){
   // mantém a tela onde está: trava a altura enquanto o conteúdo é trocado e devolve a rolagem
-  const y=window.scrollY, foco=document.activeElement && document.activeElement.id;
+  const y=window.scrollY, ativo=document.activeElement, foco=ativo && ativo.id;
+  let sel=null; try{ if(ativo && typeof ativo.selectionStart==="number") sel=[ativo.selectionStart, ativo.selectionEnd]; }catch(e){}
   const mesa=$("#mesa"); mesa.style.minHeight=mesa.offsetHeight+"px";
   renderMesa(); window.scrollTo(0,y);
-  if(foco){ const el=document.getElementById(foco); if(el) el.focus({preventScroll:true}); }
+  if(foco){ const el=document.getElementById(foco); if(el){ el.focus({preventScroll:true}); if(sel) try{ el.setSelectionRange(sel[0], sel[1]); }catch(e){} } }
 }
 
 async function baixarDocx(r){
