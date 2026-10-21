@@ -158,7 +158,15 @@ label.f.falta input,label.f.falta select,label.f.falta textarea{background:#fff7
 label.f.falta input:focus,label.f.falta select:focus{background:var(--painel)}
 label.f.erro input{border-color:var(--at);background:var(--at-suave)}
 label.f .dica{font-weight:400;font-size:11.5px;color:var(--texto-3)}
-label.f.erro .dica{color:var(--at)}
+label.f.erro .dica{color:var(--at);font-weight:500}
+label.f.atencao input{border-color:#e0a127;background:#fffaf0}
+label.f.atencao .dica{color:var(--pend)}
+label.f.info .dica{color:var(--acento)}
+.etapas .q.erro{color:#fff;background:var(--at)}
+.bloqueio{border:1px solid var(--at);border-left:4px solid var(--at);background:var(--at-suave);border-radius:var(--raio);padding:12px 14px;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+.bloqueio b{color:var(--at)}
+.bloqueio ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px}
+.link{border:0;background:none;padding:0;color:var(--at);text-decoration:underline;cursor:pointer;font:inherit;font-weight:600}
 .seg{display:inline-flex;border:1px solid var(--linha-forte);border-radius:var(--raio);overflow:hidden;background:var(--painel);flex-wrap:wrap}
 .seg button{border:0;border-right:1px solid var(--linha);background:none;padding:6px 12px;cursor:pointer;font-size:13px;color:var(--texto-2)}
 .seg button:last-child{border-right:0}
@@ -366,6 +374,107 @@ function novoAto(modeloId){
   };
 }
 
+
+
+/* ----- verificação dos documentos ----- */
+// Cada verificador devolve null (ok), {erro} (bloqueia a minuta) ou {aviso} (só alerta).
+function cnhOk(v){ const c=so(v); if(c.length!==11||/^(\d)\1+$/.test(c)) return false;
+  let s=0; for(let i=0,j=9;i<9;i++,j--) s+= +c[i]*j; let dsc=0, d1=s%11; if(d1>=10){ d1=0; dsc=2; }
+  s=0; for(let i=0,j=1;i<9;i++,j++) s+= +c[i]*j; const x=s%11; const d2 = x>=10 ? 0 : x-dsc;
+  return String(d1)+String(d2)===c.slice(9); }
+function renavamOk(v){ let c=so(v); if(c.length===9) c="00"+c; if(c.length!==11||/^(\d)\1+$/.test(c)) return false;
+  const base=c.slice(0,10).split("").reverse(), pesos=[2,3,4,5,6,7,8,9,2,3];
+  let s=0; base.forEach((d,i)=>s+= +d*pesos[i]); let dv=11-(s%11); if(dv>=10) dv=0; return dv=== +c[10]; }
+const qtd = (d, n) => d.length+" número"+(d.length===1?"":"s")+" (deveria ter "+n+")";
+const VAL = {
+  cpf(v){ const d=so(v); if(d.length!==11) return {erro:"CPF incompleto ou com números a mais: "+qtd(d,11)};
+    if(!cpfOk(v)) return {erro:"CPF inválido: o dígito verificador não confere"}; return null; },
+  cnpj(v){ const d=so(v); if(d.length!==14) return {erro:"CNPJ incompleto ou com números a mais: "+qtd(d,14)};
+    if(!cnpjOk(v)) return {erro:"CNPJ inválido: o dígito verificador não confere"}; return null; },
+  cep(v){ const d=so(v); return d.length!==8 ? {erro:"CEP deve ter 8 números: "+qtd(d,8)} : null; },
+  cnh(v){ const d=so(v); if(/[^\d\s.\-]/.test(v)) return {erro:"Registro da CNH só tem números"};
+    if(d.length!==11) return {erro:"Registro da CNH deve ter 11 números: "+qtd(d,11)};
+    return cnhOk(v) ? null : {erro:"Registro da CNH inválido: o dígito verificador não confere"}; },
+  rg(v, uf){ const t=String(v).replace(/[\s.\-\/]/g,"").toUpperCase();
+    if(!/^\d+X?$/.test(t)) return {erro:"RG com caracteres inválidos (use só números; o dígito final pode ser X)"};
+    if(t.length<5) return {erro:"RG curto demais ("+t.length+" caracteres)"};
+    if(t.length>14) return {erro:"RG longo demais ("+t.length+" caracteres)"};
+    if(uf==="SP" && (t.length<7 || t.length>9)) return {aviso:"RG de SP costuma ter de 7 a 9 caracteres com o dígito; confira"};
+    return null; },
+  rgCnh(v){ const t=String(v).toUpperCase().split(/[-\/]/)[0].replace(/[\s.]/g,"");
+    if(!/^\d+X?$/.test(t) || t.length<5 || t.length>14) return {aviso:"Confira o RG que consta na CNH (ex.: 12345678-SSP/SP)"}; return null; },
+  oab(v){ const d=so(v); if(!d || d.length>7 || /[^\d\s.\-]/.test(v.replace(/[A-Za-z]$/,""))) return {erro:"Número da OAB deve ter até 7 números"}; return null; },
+  pass(v){ return /^[A-Z0-9]{6,9}$/i.test(String(v).replace(/\s/g,"")) ? null : {aviso:"Passaporte costuma ter de 6 a 9 letras e números; confira"}; },
+  placa(v){ const t=String(v).toUpperCase().replace(/[\s\-]/g,"");
+    if(!/^[A-Z]{3}\d[A-Z0-9]\d{2}$/.test(t)) return {erro:"Placa inválida: use ABC1234 (antiga) ou ABC1D23 (Mercosul) — "+t.length+" caracteres"}; return null; },
+  renavam(v){ const d=so(v); if(/[^\d\s.\-]/.test(v)) return {erro:"RENAVAM só tem números"};
+    if(d.length!==11 && d.length!==9) return {erro:"RENAVAM deve ter 11 números: "+qtd(d,11)};
+    return renavamOk(v) ? null : {erro:"RENAVAM inválido: o dígito verificador não confere"}; },
+  chassi(v){ const t=String(v).toUpperCase().replace(/[\s\-]/g,"");
+    if(t.length!==17) return {erro:"Chassi deve ter 17 caracteres: tem "+t.length};
+    if(/[IOQ]/.test(t)) return {erro:"Chassi não usa as letras I, O ou Q; confira (pode ser 1 ou 0)"};
+    if(!/^[A-Z0-9]{17}$/.test(t)) return {erro:"Chassi só tem letras e números"}; return null; },
+  agencia(v){ const t=String(v).trim(); const m=/^(\d{1,5})(?:[\s\-]?([0-9Xx]))?$/.exec(t.replace(/\./g,""));
+    if(!m) return {erro:"Agência deve ter só números, com o dígito opcional (ex.: 1234-5)"};
+    if(m[1].length!==4) return {erro:"Agência deve ter 4 números antes do dígito: tem "+m[1].length}; return null; },
+  conta(v){ const t=String(v).trim().replace(/\./g,""); const m=/^(\d+)(?:[\s\-]?([0-9Xx]))?$/.exec(t);
+    if(!m) return {erro:"Conta deve ter só números, com o dígito (ex.: 12345-6)"};
+    const d=so(t); if(d.length<4) return {erro:"Conta curta demais: "+d.length+" números"};
+    if(d.length>14) return {erro:"Conta longa demais: "+d.length+" números"};
+    if(!/[\-\s]/.test(t)) return {aviso:"Informe o dígito da conta separado por hífen (ex.: 12345-6)"}; return null; },
+  nb(v){ const d=so(v); return d.length!==10 ? {erro:"Número do benefício (NB) deve ter 10 números: "+qtd(d,10)} : null; },
+  certMat(v){ const d=so(v); if(!d || /[A-Za-z]/.test(v)) return null; // certidões antigas usam livro/folha/termo
+    return d.length!==32 ? {aviso:"A matrícula da certidão tem 32 números: "+qtd(d,32)+". Confira (certidões antigas usam livro, folha e termo)"} : null; }
+};
+const ETAPA_DE = {outorgantes:"outorgantes", outorgados:"outorgados", poderes:"poderes"};
+// lista todos os problemas de documentos do ato, com o caminho do campo para a tela marcar
+function checarDocs(a){
+  const out=[];
+  const add=(path, rot, quem, r)=>{ if(r) out.push({path, campo:quem+" — "+rot, msg:r.erro||r.aviso, bloq:!!r.erro, etapa:ETAPA_DE[path.split(".")[0]]||"ato"}); };
+  const t=(v)=>!vazio(v);
+  const pf=(p, base, quem)=>{
+    if(t(p.cpf)) add(base+".cpf","CPF",quem,VAL.cpf(p.cpf));
+    if(t(p.docNum)){
+      const k={CNH:"cnh",RG:"rg",OAB:"oab",PASS:"pass"}[p.docTipo];
+      if(k) add(base+".docNum",{cnh:"registro da CNH",rg:"RG",oab:"OAB",pass:"passaporte"}[k],quem,VAL[k](p.docNum,p.docUF));
+    }
+    if(p.docTipo==="CNH" && t(p.cnhRg)) add(base+".cnhRg","RG da CNH",quem,VAL.rgCnh(p.cnhRg));
+    if(t(p.cep)) add(base+".cep","CEP",quem,VAL.cep(p.cep));
+    if(t(p.certMat)) add(base+".certMat","matrícula da certidão",quem,VAL.certMat(p.certMat));
+  };
+  const parte=(o, base, quem)=>{
+    if(o.tp==="PJ"){ const j=o.pj;
+      if(t(j.cnpj)) add(base+".pj.cnpj","CNPJ",quem,VAL.cnpj(j.cnpj));
+      if(t(j.cep)) add(base+".pj.cep","CEP da sede",quem,VAL.cep(j.cep));
+      (j.reps||[]).forEach((r,i)=>pf(r, base+".pj.reps."+i, "Representante"+(j.reps.length>1?" "+(i+1):"")+" de "+quem.toLowerCase()));
+    } else pf(o.pf, base+".pf", quem);
+  };
+  a.outorgantes.forEach((o,i)=>parte(o,"outorgantes."+i,"Outorgante"+(a.outorgantes.length>1?" "+(i+1):"")));
+  a.outorgados.forEach((o,i)=>parte(o,"outorgados."+i,"Outorgado"+(a.outorgados.length>1?" "+(i+1):"")));
+  a.poderes.forEach((pd,i)=>{ const v=pd.v||{}, b="poderes."+i+".v.", q=(i+1)+") "+(pd.titulo||PODERES[pd.k]&&PODERES[pd.k].nome||"poder");
+    if(pd.k==="banco"){ if(t(v.agencia)) add(b+"agencia","agência",q,VAL.agencia(v.agencia)); if(t(v.conta)) add(b+"conta","conta",q,VAL.conta(v.conta)); }
+    if(pd.k==="veiculo"){ if(t(v.placa)) add(b+"placa","placa",q,VAL.placa(v.placa)); if(t(v.renavam)) add(b+"renavam","RENAVAM",q,VAL.renavam(v.renavam)); if(t(v.chassi)) add(b+"chassi","chassi",q,VAL.chassi(v.chassi)); }
+    if(pd.k==="inss" && t(v.nb)) add(b+"nb","NB",q,VAL.nb(v.nb));
+  });
+  // o mesmo CPF/CNPJ em duas partes do ato
+  const vistos={};
+  const reg=(num, path, quem, tipo)=>{ const d=so(num); if(!d) return; (vistos[tipo+d]=vistos[tipo+d]||[]).push({path,quem}); };
+  const varrer=(lista, nome)=>lista.forEach((o,i)=>{ const q=nome+(lista.length>1?" "+(i+1):""), b=(nome==="Outorgante"?"outorgantes.":"outorgados.")+i;
+    if(o.tp==="PJ"){ reg(o.pj.cnpj, b+".pj.cnpj", q, "CNPJ"); (o.pj.reps||[]).forEach((r,j)=>reg(r.cpf, b+".pj.reps."+j+".cpf", "representante de "+q.toLowerCase(), "CPF")); }
+    else reg(o.pf.cpf, b+".pf.cpf", q, "CPF"); });
+  varrer(a.outorgantes,"Outorgante"); varrer(a.outorgados,"Outorgado");
+  Object.entries(vistos).forEach(([k,l])=>{ if(l.length<2) return;
+    const tipo=k.startsWith("CPF")?"CPF":"CNPJ";
+    l.forEach(x=>out.push({path:x.path, campo:x.quem+" — "+tipo, msg:tipo+" repetido: o mesmo número está em "+l.map(y=>y.quem).join(" e "), bloq:true, etapa:ETAPA_DE[x.path.split(".")[0]]}));
+  });
+  return out;
+}
+// todos os CPFs e CNPJs de um ato (para achar o mesmo cliente em outras procurações)
+function numerosDe(a){
+  const out=[]; const add=v=>{ const d=so(v); if(d) out.push(d); };
+  a.outorgantes.concat(a.outorgados).forEach(o=>{ if(o.tp==="PJ"){ add(o.pj.cnpj); (o.pj.reps||[]).forEach(r=>add(r.cpf)); } else add(o.pf.cpf); });
+  return out;
+}
 
 /* ----- documentos necessários para a lavratura ----- */
 // Monta a lista a partir do modelo, das partes e dos poderes do ato: muda sozinha quando o ato muda.
@@ -673,7 +782,6 @@ function conferir(a){
     }
     const cpfv = vazio(p.cpf) ? null : cpfOk(p.cpf);
     R(quem+" — CPF", vazio(p.cpf)?"":fmtCPF(p.cpf), st(p.cpf, cpfv), cpfv===false?"dígito verificador inválido":"");
-    if(cpfv===false) at(quem+": CPF "+fmtCPF(p.cpf)+" com dígito verificador inválido. Confira no documento original.");
     const ecn = {solteiro:"solteiro(a)",casado:"casado(a)",divorciado:"divorciado(a)",viuvo:"viúvo(a)",separado:"separado(a) judicialmente"}[p.ec]||"";
     R(quem+" — estado civil", ecn, st(p.ec));
     if(completo){
@@ -711,7 +819,6 @@ function conferir(a){
     const v = vazio(o.cnpj) ? null : cnpjOk(o.cnpj);
     R(quem+" — razão social", o.razao, st(o.razao));
     R(quem+" — CNPJ", vazio(o.cnpj)?"":fmtCNPJ(o.cnpj), st(o.cnpj, v), v===false?"dígito verificador inválido":"");
-    if(v===false) at(quem+": CNPJ "+fmtCNPJ(o.cnpj)+" com dígito verificador inválido. Confira no cartão CNPJ.");
     R(quem+" — NIRE", o.nire, vazio(o.nire)?"PENDENTE":"OK");
     const es = enderecoTexto(o.endr, o.sede), eo=o.endr||{}, compl_ = !vazio(eo.logr)&&!vazio(eo.num)&&!vazio(eo.bairro)&&!vazio(eo.cidade)&&!vazio(eo.uf);
     R(quem+" — sede", es, es ? (compl_ || (vazio(eo.logr) && !vazio(o.sede)) ? "OK" : "PENDENTE") : "PENDENTE");
@@ -749,6 +856,13 @@ function conferir(a){
   if(a.flags.irrevogavel && !a.flags.causaPropria) at("Cláusula de irrevogabilidade (arts. 683 e 684 CC): a revogação gera perdas e danos e, se a cláusula for condição de negócio bilateral, a revogação é ineficaz. Confirme que o outorgante compreende o efeito.");
   if(a.flags.citacao) at("Poder para receber citação: a citação feita ao procurador vale como citação pessoal do outorgante (art. 242 CPC). Advirta o outorgante.");
 
+  const probs = checarDocs(a);
+  if(probs.length){
+    S("Verificação dos documentos");
+    probs.forEach(x=>R(x.campo, x.msg, "ATENÇÃO", x.bloq?"impede gerar a minuta":"confira"));
+    const nb = probs.filter(x=>x.bloq).length;
+    if(nb) at("Há "+nb+" erro(s) em documentos (CPF, CNPJ, RG, CNH, placa, RENAVAM, chassi, banco, NB ou CEP). A minuta só pode ser gerada depois da correção.");
+  }
   S("Encerramento");
   R("Substabelecimento", {VEDADO:"vedado",COM:"permitido com reserva",SEM:"permitido sem reserva"}[a.substab]||"", st(a.substab));
   R("Prazo de validade", a.prazo==="INDETERMINADO"?"indeterminado":(a.prazo==="DEFINIDO"?a.prazoTexto:""), a.prazo==="DEFINIDO"?st(a.prazoTexto):st(a.prazo));
@@ -801,7 +915,7 @@ const DOCX_FIXOS = {
 };
 function textoPlano(m){ return m.titulo+"\n\n"+m.seg.map(s=>s.t).join("")+"\n\n"+m.ass.map(x=>"______________________________________________\n"+x.nome+(x.sub?"\n"+x.sub:"")).join("\n\n"); }
 
-return {UFS, normalizar, enderecoTexto, MODELOS, PODERES, REGIMES, CARGOS_ESC, EMOL, documentos, documentosTexto, novoAto, novaParte, novaPF, montar, conferir, documentXml, DOCX_FIXOS, textoPlano,
+return {VAL, checarDocs, numerosDe, UFS, normalizar, enderecoTexto, MODELOS, PODERES, REGIMES, CARGOS_ESC, EMOL, documentos, documentosTexto, novoAto, novaParte, novaPF, montar, conferir, documentXml, DOCX_FIXOS, textoPlano,
   cpfOk, cnpjOk, fmtCPF, fmtCNPJ, fmtCEP, dataBR, dataExtensoSeg, extenso, vazio};
 })();
 if(typeof module!=="undefined") module.exports=N;
@@ -950,7 +1064,7 @@ function renderLista(){
     const od = nomeParte(r.outorgados[0]);
     return '<button type="button" class="item'+(id===atual?" on":"")+'" data-id="'+id+'"><b>'+H(tituloReg(r))+'</b><span class="data">'+(r.ato.data?N.dataBR(r.ato.data):'')+'</span>'+
       '<span class="meta">'+H(r.tipo)+(od?' → '+H(od):'')+'</span>'+
-      '<span class="meta"><span class="pill '+s[1]+'">'+s[0]+'</span>'+(m.pend.length?'<span class="pill pend">'+m.pend.length+' pendência'+(m.pend.length>1?'s':'')+'</span>':'<span class="pill ok">completa</span>')+'</span></button>';
+      '<span class="meta"><span class="pill '+s[1]+'">'+s[0]+'</span>'+(N.checarDocs(r).some(x=>x.bloq)?'<span class="pill at">erro em documento</span>':'')+(m.pend.length?'<span class="pill pend">'+m.pend.length+' pendência'+(m.pend.length>1?'s':'')+'</span>':'<span class="pill ok">completa</span>')+'</span></button>';
   }).join("");
 }
 $("#filtros").addEventListener("click",e=>{ const b=e.target.closest("[data-f]"); if(!b) return; filtro=b.dataset.f; renderLista(); });
@@ -972,12 +1086,34 @@ function fid(path){ return "f-"+path.replace(/\./g,"-"); }
 function campo(path, label, o){
   o=o||{}; const r=arquivo[atual]; const v=get(r,path); const val=v==null?"":v;
   const cls=["f"]; if(o.cls) cls.push(o.cls); if(o.dado) cls.push("dado"); if(o.larga) cls.push("larga"); if(o.req) cls.push("req");
-  if(o.req && N.vazio(val)) cls.push("falta"); if(o.erro) cls.push("erro");
+  if(o.req && N.vazio(val)) cls.push("falta");
+  const ev = errosMapa[path]; if(o.erro && !ev) cls.push("erro");
+  if(ev){ cls.push(ev.bloq?"erro":"atencao"); o.dicaBase=o.dica; o.dica=ev.msg; }
+  else if(/\.(cpf|cnpj)$/.test(path) && !N.vazio(val)){ const ja=jaNaBiblioteca(val); if(ja){ cls.push("info"); o.dicaBase=o.dica; o.dica=ja; } }
   let ctl;
   if(o.opts) ctl='<select id="'+fid(path)+'" data-p="'+path+'"'+(o.re?' data-re="1"':'')+'><option value="">— selecione —</option>'+o.opts.map(x=>{ const [k,l]=Array.isArray(x)?x:[x,x]; return '<option value="'+H(k)+'"'+(String(val)===String(k)?" selected":"")+'>'+H(l)+'</option>'; }).join("")+'</select>';
   else if(o.ta) ctl='<textarea id="'+fid(path)+'" data-p="'+path+'" placeholder="'+H(o.ph||"")+'">'+H(val)+'</textarea>';
   else ctl='<input id="'+fid(path)+'" data-p="'+path+'" type="'+(o.tipo||"text")+'" value="'+H(val)+'" placeholder="'+H(o.ph||"")+'"'+(o.mask?' data-mask="'+o.mask+'"':'')+(o.list?' list="'+o.list+'"':'')+' autocomplete="off">';
-  return '<label class="'+cls.join(" ")+'"><span class="rot">'+H(label)+'</span>'+ctl+(o.dica?'<span class="dica">'+H(o.dica)+'</span>':'')+'</label>';
+  return '<label class="'+cls.join(" ")+'"><span class="rot">'+H(label)+'</span>'+ctl+'<span class="dica" data-base="'+H(o.dicaBase!==undefined?(o.dicaBase||""):(o.dica||""))+'"'+(o.dica?'':' hidden')+'>'+H(o.dica||"")+'</span></label>';
+}
+let errosMapa = {};
+function calcErros(r){ errosMapa={}; if(!r) return; N.checarDocs(r).forEach(x=>{ if(!errosMapa[x.path] || x.bloq) errosMapa[x.path]=x; }); }
+// mostra o erro de cada campo enquanto a pessoa digita, sem redesenhar a tela
+function atualizarErros(){
+  const antes=errosMapa; calcErros(arquivo[atual]);
+  const paths=new Set(Object.keys(antes).concat(Object.keys(errosMapa)));
+  paths.forEach(path=>{ const el=document.getElementById(fid(path)); if(!el) return; const lab=el.closest("label.f"); if(!lab) return;
+    const d=lab.querySelector(".dica"); const ev=errosMapa[path];
+    lab.classList.toggle("erro", !!(ev&&ev.bloq)); lab.classList.toggle("atencao", !!(ev&&!ev.bloq));
+    if(d){ const txt = ev ? ev.msg : (d.dataset.base||""); d.textContent=txt; d.hidden=!txt; }
+  });
+}
+// o mesmo CPF/CNPJ em outra procuração da biblioteca (só informa: pode ser um cliente que voltou)
+function jaNaBiblioteca(num){
+  const d=String(num).replace(/\D/g,""); if(d.length!==11 && d.length!==14) return "";
+  const outros=Object.entries(arquivo).filter(([id,r])=>id!==atual && N.numerosDe(r).includes(d));
+  if(!outros.length) return "";
+  return "Já consta em "+outros.length+" procuração(ões) da biblioteca: "+outros.slice(0,3).map(([id,r])=>tituloReg(r)+" ("+r.tipo+(r.ato&&r.ato.data?", "+N.dataBR(r.ato.data):"")+")").join("; ");
 }
 function seg(path, opcoes){
   const r=arquivo[atual]; const v=get(r,path);
@@ -986,7 +1122,6 @@ function seg(path, opcoes){
 
 function formPF(base, p, modo){
   // modo: "outorgante" | "outorgado" | "rep"
-  const cpfErr = !N.vazio(p.cpf) && !N.cpfOk(p.cpf);
   const venc = p.docValidade && arquivo[atual].ato.data && p.docValidade < arquivo[atual].ato.data;
   let h='<div class="grade">';
   h+=campo(base+".nome","Nome completo",{req:1,larga:1});
@@ -994,7 +1129,7 @@ function formPF(base, p, modo){
   h+=campo(base+".sexo","Sexo (para concordância)",{opts:[["F","Feminino"],["M","Masculino"]],req:1,re:1});
   h+=campo(base+".nac","Nacionalidade",{req:1,ph:"brasileira"});
   h+=campo(base+".prof","Profissão",{req:1});
-  h+=campo(base+".cpf","CPF",{req:1,dado:1,mask:"cpf",erro:cpfErr,dica:cpfErr?"Dígito verificador inválido":"",ph:"000.000.000-00"});
+  h+=campo(base+".cpf","CPF",{req:1,dado:1,mask:"cpf",ph:"000.000.000-00"});
   h+=campo(base+".docTipo","Documento de identidade",{opts:[["CNH","CNH"],["RG","RG"],["RNM","RNM (estrangeiro)"],["PASS","Passaporte"],["OAB","Carteira da OAB"],["OUTRO","Outro"]],req:1,re:1});
   if(p.docTipo==="OUTRO") h+=campo(base+".docOutro","Tipo do documento",{req:1,ph:"Carteira do CRM"});
   if(p.docTipo) h+=campo(base+".docNum",p.docTipo==="CNH"?"Nº de registro da CNH":"Número",{req:1,dado:1});
@@ -1045,10 +1180,9 @@ function formEndereco(base, o, antigo){
   '</div>';
 }
 function formPJ(base, pj){
-  const err = !N.vazio(pj.cnpj) && !N.cnpjOk(pj.cnpj);
   let h='<div class="grade">';
   h+=campo(base+".razao","Razão social",{req:1,larga:1});
-  h+=campo(base+".cnpj","CNPJ",{req:1,dado:1,mask:"cnpj",erro:err,dica:err?"Dígito verificador inválido":"",ph:"00.000.000/0000-00"});
+  h+=campo(base+".cnpj","CNPJ",{req:1,dado:1,mask:"cnpj",ph:"00.000.000/0000-00"});
   h+=campo(base+".nire","NIRE ou registro no RCPJ",{dado:1});
   h+='</div><h4 class="sub-tit">Endereço da sede</h4>'+formEndereco(base, pj, pj.sede)+'<div class="grade">';
   h+=campo(base+".atoConst","Ato constitutivo (nº e data do registro na JUCESP)",{req:1,larga:1,ph:"registrado na JUCESP sob nº …, em …"});
@@ -1103,20 +1237,22 @@ function renderMesa(){
     return;
   }
   const r=N.normalizar(arquivo[atual]); const s=STATUS[r.status]||STATUS.rascunho;
+  calcErros(r);
   const mod=N.MODELOS.find(x=>x.id===r.modelo);
   let h='<div class="topo"><div><div class="eyebrow"><span>Procuração · '+H(mod?mod.nome+" · "+mod.sub:r.tipo)+'</span><span class="pill '+s[1]+'">'+s[0]+'</span>'+(r.ato.data?'<span>'+N.dataBR(r.ato.data)+'</span>':'')+'</div><h2>'+H(tituloReg(r))+'</h2></div><div class="acoes">'+
     '<button type="button" class="btn" data-acao="duplicar">Duplicar</button>'+
     '<button type="button" class="btn perigo" data-acao="excluir">Excluir</button></div></div>';
   const faltas=faltasPorEtapa(r);
-  h+='<div class="trabalho"><nav class="etapas" aria-label="Etapas">'+ETAPAS.map(([k,l],i)=>{ const q=faltas[k]; const feita=k!=="conferencia" && q===0 || (k==="conferencia" && r.fichaOk);
-    return '<button type="button" data-etapa="'+k+'" class="'+(etapa===k?"on ":"")+(feita?"feita":"")+'"'+(etapa===k?' aria-current="step"':'')+'><span class="n">'+(feita?"✓":(i+1))+'</span>'+l+(q&&k!=="conferencia"?'<span class="q" title="itens pendentes">'+q+'</span>':'')+'</button>'; }).join("")+'</nav>';
+  h+='<div class="trabalho"><nav class="etapas" aria-label="Etapas">'+ETAPAS.map(([k,l],i)=>{ const q=faltas[k]; const feita=k!=="conferencia" && q===0 && !faltas.erros[k] || (k==="conferencia" && r.fichaOk);
+    return '<button type="button" data-etapa="'+k+'" class="'+(etapa===k?"on ":"")+(feita?"feita":"")+'"'+(etapa===k?' aria-current="step"':'')+'><span class="n">'+(feita?"✓":(i+1))+'</span>'+l+(faltas.erros[k]?'<span class="q erro" title="documentos com erro">'+faltas.erros[k]+'!</span>':(q&&k!=="conferencia"?'<span class="q" title="itens pendentes">'+q+'</span>':''))+'</button>'; }).join("")+'</nav>';
   h+='<div class="painel">'+painel(r)+'</div></div>';
   mesa.innerHTML=h;
 }
 function faltasPorEtapa(r){
   const cf=N.conferir(r); const q={ato:0,outorgantes:0,outorgados:0,poderes:0,fecho:0,conferencia:0}; let at="ato";
-  cf.rows.forEach(x=>{ if(x.sec){ at = /^Outorgante/.test(x.sec)?"outorgantes":/^Outorgado/.test(x.sec)?"outorgados":x.sec==="Poderes"?"poderes":x.sec==="Encerramento"?"fecho":"ato"; return; }
-    if(x.status && x.status!=="OK" && !/Selo digital|NIRE|Documentos apresentados/.test(x.campo)) q[at]++; });
+  cf.rows.forEach(x=>{ if(x.sec){ at = /^Outorgante/.test(x.sec)?"outorgantes":/^Outorgado/.test(x.sec)?"outorgados":x.sec==="Poderes"?"poderes":x.sec==="Encerramento"?"fecho":x.sec==="Verificação dos documentos"?null:"ato"; return; }
+    if(at && x.status && x.status!=="OK" && !/Selo digital|NIRE|Documentos apresentados/.test(x.campo)) q[at]++; });
+  q.erros={}; N.checarDocs(r).forEach(x=>{ if(x.bloq) q.erros[x.etapa]=(q.erros[x.etapa]||0)+1; });
   return q;
 }
 function painel(r){
@@ -1169,14 +1305,23 @@ function painel(r){
   // conferência
   const cf=N.conferir(r), m=N.montar(r);
   const cnt={OK:0,PENDENTE:0,"ATENÇÃO":0}; cf.rows.forEach(x=>{ if(x.status) cnt[x.status]++; });
-  let h='<section class="bloco"><div class="bloco-topo"><h3>Ficha de conferência</h3></div>'+
+  const bloqueios = N.checarDocs(r).filter(x=>x.bloq);
+  let topo='';
+  if(bloqueios.length){
+    topo='<div class="bloqueio" role="alert"><b>A minuta não pode ser gerada: '+bloqueios.length+' erro'+(bloqueios.length>1?'s':'')+' em documentos.</b><ul>'+
+      bloqueios.map(x=>'<li><button type="button" class="link" data-etapa="'+x.etapa+'">'+H(x.campo)+'</button>: '+H(x.msg)+'</li>').join("")+'</ul><span>Corrija os campos marcados em vermelho. A minuta é liberada sozinha quando não houver mais erros.</span></div>';
+  }
+  let h=topo+'<section class="bloco"><div class="bloco-topo"><h3>Ficha de conferência</h3></div>'+
     '<div class="resumo"><div class="ok"><b>'+cnt.OK+'</b><span>campos conferidos</span></div><div class="pend"><b>'+cnt.PENDENTE+'</b><span>pendentes</span></div><div class="at"><b>'+cnt["ATENÇÃO"]+'</b><span>exigem atenção</span></div></div>';
   h+='<div class="tabela"><table><thead><tr><th>Campo</th><th>Valor</th><th>Status</th></tr></thead><tbody>'+cf.rows.map(x=>x.sec?'<tr class="sec"><td colspan="3">'+H(x.sec)+'</td></tr>':
     '<tr><td>'+H(x.campo)+'</td><td class="v">'+H(x.valor)+'</td><td><span class="pill '+({OK:"ok",PENDENTE:"pend","ATENÇÃO":"at"}[x.status])+'">'+H(x.status)+'</span>'+(x.nota?'<div class="aviso">'+H(x.nota)+'</div>':'')+'</td></tr>').join("")+'</tbody></table></div>';
+  if(bloqueios.length){
+    h+='<p class="aviso">Os erros de documentos estão listados no topo desta página.</p></section>';
+  } else
   h+='<div class="confirmar">'+(r.fichaOk?'<span>Ficha confirmada. A minuta abaixo reflete os dados atuais.</span><button type="button" class="mini" data-acao="desconfirmar">Reabrir conferência</button>':
     '<span>Confira a ficha com os documentos originais antes de gerar a minuta.</span><button type="button" class="btn p" data-acao="confirmar">Confirmar ficha e gerar minuta</button>')+'</div></section>';
   if(cf.alertas.length) h+='<section class="bloco"><h3>Alertas jurídicos</h3><ul class="alertas">'+cf.alertas.map(a=>'<li>'+H(a)+'</li>').join("")+'</ul></section>';
-  if(r.fichaOk){
+  if(r.fichaOk && !bloqueios.length){
     h+='<section class="bloco"><div class="bloco-topo"><h3>Minuta</h3><span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn p" data-acao="docx">Baixar .docx</button><button type="button" class="btn" data-acao="copiar">Copiar texto</button></span></div>';
     h+='<div class="mesa-folha"><div class="folha"><div class="tit">'+H(m.titulo)+'</div><div class="corpo">'+m.seg.map(s=>{ let t=H(s.t); if(s.b) t='<b>'+t+'</b>'; if(s.p) t='<mark>'+t+'</mark>'; return t; }).join("")+'</div>'+
       m.ass.map(x=>'<div class="ass">______________________________________________<br><b>'+H(x.nome)+'</b>'+(x.sub?'<br>'+H(x.sub):'')+'</div>').join("")+'</div></div>';
@@ -1243,6 +1388,7 @@ mesa.addEventListener("input",e=>{
   if(el.dataset.mask==="cnpj"){ v=N.fmtCNPJ(v); el.value=v; }
   if(el.dataset.mask==="cep"){ v=N.fmtCEP(v); el.value=v; }
   set(arquivo[atual], p, v);
+  atualizarErros();
   if(el.dataset.mask==="cep" && v.replace(/\D/g,"").length===8) buscarCep(p.replace(/\.cep$/,""), v.replace(/\D/g,""));
   if(el.tagName!=="SELECT") { const lab=el.closest("label.f"); if(lab) lab.classList.toggle("falta", lab.classList.contains("falta") && !v); }
   salvarDepois(atual);
@@ -1289,11 +1435,13 @@ mesa.addEventListener("click",e=>{
   else if(ac==="usarEsc"){ const x=escreventes[i]; r.ato.escNome=x.nome; r.ato.escCargo=x.cargo; }
   else if(ac==="salvarEsc"){ if(N.vazio(r.ato.escNome)||N.vazio(r.ato.escCargo)){ toast("Preencha nome e cargo do escrevente"); return; }
     escreventes=escreventes.filter(x=>x.nome!==r.ato.escNome).concat([{nome:r.ato.escNome.trim(),cargo:r.ato.escCargo.trim()}]); salvarEscreventes(); toast("Escrevente guardado no cadastro"); }
+  else if(ac==="confirmar" && N.checarDocs(r).some(x=>x.bloq)){ toast("Corrija os erros nos documentos primeiro"); return; }
   else if(ac==="confirmar"){ r.fichaOk=true; if(r.status==="rascunho") r.status="conferida"; }
   else if(ac==="desconfirmar"){ r.fichaOk=false; }
   else if(ac==="duplicar"){ const id=uid(); const c=JSON.parse(JSON.stringify(r)); c.status="rascunho"; c.fichaOk=false; c.selo=""; c.cnib={resultado:"",hash:""}; c.criadoEm=new Date().toISOString(); arquivo[id]=c; atual=id; salvarDepois(id); toast("Cópia criada como rascunho"); renderMesa(); return; }
   else if(ac==="excluir"){ if(!b.classList.contains("armado")){ b.classList.add("armado"); b.textContent="Confirmar exclusão"; setTimeout(()=>{ if(b.isConnected){ b.classList.remove("armado"); b.textContent="Excluir"; } },4000); return; } excluir(atual); return; }
   else if(ac==="docx"){ baixarDocx(r); return; }
+  else if(ac==="copiar" && N.checarDocs(r).some(x=>x.bloq)){ toast("Corrija os erros nos documentos antes de copiar a minuta"); return; }
   else if(ac==="copiar"){ copiar(N.textoPlano(N.montar(r)), "Texto copiado"); return; }
   else if(ac==="copiarDocs"){ copiar(N.documentosTexto(r,"Documentos para a procuração de "+tituloReg(r)), "Lista copiada"); return; }
   salvarDepois(atual); redesenha();
@@ -1318,6 +1466,7 @@ function redesenha(){
 }
 
 async function baixarDocx(r){
+  if(N.checarDocs(r).some(x=>x.bloq)){ toast("Corrija os erros nos documentos antes de gerar a minuta"); return; }
   if(typeof JSZip==="undefined"){ toast("Gerador de Word não carregou. Recarregue a página."); return; }
   const m=N.montar(r); const z=new JSZip();
   Object.entries(N.DOCX_FIXOS).forEach(([k,v])=>z.file(k,v));
