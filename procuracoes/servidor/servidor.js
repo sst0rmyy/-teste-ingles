@@ -164,6 +164,28 @@ function lerCorpo(req) {
 }
 const ID_OK = /^[a-z0-9]{1,40}$/i;
 
+/* ---------- CEP ---------- */
+const cacheCep = new Map();
+async function obter(url) {
+  const r = await fetch(url, { signal: AbortSignal.timeout(6000), headers: { "User-Agent": "LivroProcuracoes/1.0" } });
+  if (!r.ok) throw new Error("http " + r.status);
+  return r.json();
+}
+async function buscarCep(cep) {
+  if (cacheCep.has(cep)) return cacheCep.get(cep);
+  let d;
+  try {
+    const j = await obter(`https://viacep.com.br/ws/${cep}/json/`);
+    if (j.erro) throw new Error("não encontrado");
+    d = { logr: j.logradouro || "", bairro: j.bairro || "", cidade: j.localidade || "", uf: j.uf || "" };
+  } catch (e) {
+    const j = await obter(`https://brasilapi.com.br/api/cep/v1/${cep}`);
+    d = { logr: j.street || "", bairro: j.neighborhood || "", cidade: j.city || "", uf: j.state || "" };
+  }
+  cacheCep.set(cep, d);
+  return d;
+}
+
 /* ---------- rotas ---------- */
 async function tratar(req, res) {
   const url = new URL(req.url, "http://local");
@@ -237,6 +259,13 @@ async function tratar(req, res) {
       avisar({ tipo: "procuracao", id });
       return enviar(res, 200, { ok: true });
     }
+  }
+
+  // busca de endereço pelo CEP (ViaCEP, com BrasilAPI de reserva); o navegador não precisa sair da rede
+  const mc = /^\/api\/cep\/(\d{8})$/.exec(rota);
+  if (mc && req.method === "GET") {
+    try { return enviar(res, 200, await buscarCep(mc[1])); }
+    catch (e) { return enviar(res, 404, { erro: "CEP não encontrado" }); }
   }
 
   if (rota === "/api/cartorio") {

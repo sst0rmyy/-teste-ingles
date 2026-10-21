@@ -143,6 +143,11 @@ label.doc.feito .doc-txt{color:var(--texto-3);text-decoration:line-through;text-
 .bloco-topo{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px 14px}
 .grade .larga{grid-column:1/-1}
+.grade-end{display:grid;grid-template-columns:170px minmax(0,1fr) minmax(0,1fr) 100px;grid-template-areas:"cep logr logr num" "compl bairro cidade uf";gap:12px 14px}
+.grade-end .c-cep{grid-area:cep} .grade-end .c-logr{grid-area:logr} .grade-end .c-num{grid-area:num} .grade-end .c-compl{grid-area:compl}
+.grade-end .c-bairro{grid-area:bairro} .grade-end .c-cidade{grid-area:cidade} .grade-end .c-uf{grid-area:uf}
+@media (max-width:760px){.grade-end{grid-template-columns:minmax(0,1fr) 110px;grid-template-areas:"cep cep" "logr logr" "num compl" "bairro bairro" "cidade uf"}}
+.sub-tit{margin:4px 0 0;font:600 11.5px/1.3 var(--f-corpo);letter-spacing:.05em;text-transform:uppercase;color:var(--marinho-2)}
 label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:500;color:var(--texto-2);min-width:0}
 label.f.req .rot::after{content:" *";color:var(--at)}
 label.f input,label.f select,label.f textarea{font-weight:400;font-size:14px;color:var(--texto);padding:7px 10px;border:1px solid var(--linha-forte);border-radius:var(--raio);background:var(--painel);width:100%;min-height:36px}
@@ -262,9 +267,25 @@ const norm = s => String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(
 const vazio = v => v===undefined || v===null || String(v).trim()==="";
 
 /* ----- modelos de dados ----- */
+function novoEnd(){ return {logr:"",num:"",compl:"",bairro:"",cidade:"",uf:""}; }
+// procurações antigas não têm o endereço separado: completa a estrutura sem apagar o texto antigo (end/sede)
+function normalizar(a){
+  const pf = p => { if(p && !p.endr) p.endr = novoEnd(); };
+  const parte = o => { pf(o.pf); if(o.pj){ if(!o.pj.endr) o.pj.endr = novoEnd(); (o.pj.reps||[]).forEach(pf); } };
+  (a.outorgantes||[]).forEach(parte); (a.outorgados||[]).forEach(parte);
+  return a;
+}
+const UFS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
+// "Rua X, nº 65, apto 2, Centro, Cidade-UF" — vazio quando nada foi preenchido
+function enderecoTexto(e, antigo){
+  e = e || {};
+  if(vazio(e.logr) && vazio(e.num) && vazio(e.bairro) && vazio(e.cidade)) return vazio(antigo) ? "" : String(antigo).trim();
+  const num = vazio(e.num) ? "" : (/^s\/?n/i.test(e.num.trim()) ? "s/nº" : "nº "+e.num.trim());
+  return [e.logr, num, e.compl, e.bairro].map(x=>String(x||"").trim()).filter(Boolean).join(", ") + (vazio(e.cidade) ? "" : ", "+e.cidade.trim()+(vazio(e.uf)?"":"-"+e.uf.trim()));
+}
 function novaPF(extra){ return Object.assign({nome:"",sexo:"",nac:"",prof:"",docTipo:"",docNum:"",docOrg:"",docUF:"",cnhRg:"",docOutro:"",docValidade:"",cpf:"",nasc:"",
-  ec:"",certTipo:"inteiro teor",certData:"",certMat:"",conjNome:"",regime:"",casData:"",pacto:"",ue:"",ueNome:"",nomeCert:"",end:"",cep:"",email:"",tel:"",cargo:"",assin:"normal"}, extra||{}); }
-function novaPJ(){ return {razao:"",cnpj:"",nire:"",sede:"",cep:"",atoConst:"",ultAlt:"",certSimpl:"",clausula:"",adm:"isolada",reps:[novaPF({cargo:"sócio administrador"})]}; }
+  ec:"",certTipo:"inteiro teor",certData:"",certMat:"",conjNome:"",regime:"",casData:"",pacto:"",ue:"",ueNome:"",nomeCert:"",end:"",cep:"",endr:novoEnd(),email:"",tel:"",cargo:"",assin:"normal"}, extra||{}); }
+function novaPJ(){ return {razao:"",cnpj:"",nire:"",sede:"",cep:"",endr:novoEnd(),atoConst:"",ultAlt:"",certSimpl:"",clausula:"",adm:"isolada",reps:[novaPF({cargo:"sócio administrador"})]}; }
 function novaParte(tp, extra){ return {tp:tp, pf:novaPF(extra), pj:novaPJ()}; }
 
 const REGIMES = ["comunhão parcial de bens","comunhão universal de bens","separação convencional de bens","separação obrigatória de bens","participação final nos aquestos"];
@@ -494,8 +515,19 @@ function montar(a){
     const m = {solteiro:g1(p,"solteiro","solteira"),casado:g1(p,"casado","casada"),divorciado:g1(p,"divorciado","divorciada"),viuvo:g1(p,"viúvo","viúva"),separado:g1(p,"separado judicialmente","separada judicialmente")}[p.ec];
     return m ? [[m+", "]] : [P("", "estado civil de "+quem),[", "]];
   }
+  // rua, número, complemento, bairro e cidade-UF separados por vírgula; o que faltar vira [PENDENTE]
+  function endPartes(e, antigo, quem){
+    e = e || {};
+    if(vazio(e.logr) && vazio(e.num) && vazio(e.bairro) && vazio(e.cidade) && !vazio(antigo)) return [[String(antigo).trim()]];
+    const r=[P(e.logr,"rua do endereço de "+quem),[", "]];
+    if(!vazio(e.num) && /^s\/?n/i.test(e.num.trim())) r.push(["s/nº"]); else { r.push(["nº "]); r.push(P(e.num,"número do endereço de "+quem)); }
+    if(!vazio(e.compl)) r.push([", "+e.compl.trim()]);
+    r.push([", "]); r.push(P(e.bairro,"bairro de "+quem));
+    r.push([", "]); r.push(P(e.cidade,"cidade de "+quem)); r.push(["-"]); r.push(P(e.uf,"UF de "+quem));
+    return r;
+  }
   function endSeg(p, quem){
-    const r=[[" "+g1(p,"residente e domiciliado","residente e domiciliada")+" na "],P(p.end,"endereço de "+quem),[", CEP "],P(vazio(p.cep)?"":fmtCEP(p.cep),"CEP de "+quem)];
+    const r=[[" "+g1(p,"residente e domiciliado","residente e domiciliada")+" na "]].concat(endPartes(p.endr, p.end, quem)).concat([[", CEP "],P(vazio(p.cep)?"":fmtCEP(p.cep),"CEP de "+quem)]);
     if(!vazio(p.email)) r.push([", e-mail "+p.email.trim()]);
     if(!vazio(p.tel)) r.push([", telefone "+p.tel.trim()]);
     return r;
@@ -508,7 +540,7 @@ function montar(a){
   }
   function qualPJ(pj, quem){
     let r=[PB(vazio(pj.razao)?"":pj.razao.trim().toUpperCase(),"razão social de "+quem),[", pessoa jurídica de direito privado, inscrita no "],["CNPJ sob nº ",1],PB(vazio(pj.cnpj)?"":fmtCNPJ(pj.cnpj),"CNPJ de "+quem),
-      [", com sede na "],P(pj.sede,"endereço da sede de "+quem),[", CEP "],P(vazio(pj.cep)?"":fmtCEP(pj.cep),"CEP da sede de "+quem)];
+      [", com sede na "]].concat(endPartes(pj.endr, pj.sede, "sede de "+quem)).concat([[", CEP "],P(vazio(pj.cep)?"":fmtCEP(pj.cep),"CEP da sede de "+quem)]);
     if(!vazio(pj.nire)) r.push([", NIRE "+pj.nire.trim()]);
     r=r.concat([[", com seu ato constitutivo "],P(pj.atoConst,"registro do ato constitutivo de "+quem),[" e última alteração contratual consolidada "],P(pj.ultAlt,"registro da última alteração consolidada de "+quem),
       [", conforme certidão simplificada expedida pela JUCESP em "],P(dataBR(pj.certSimpl),"data da certidão simplificada de "+quem),
@@ -663,7 +695,8 @@ function conferir(a){
         at(quem+": o nome na certidão (\""+p.nomeCert+"\") diverge do nome no documento de identidade (\""+p.nome+"\"). Verifique averbação de alteração de nome antes de lavrar.");
       }
     }
-    R(quem+" — endereço", p.end, st(p.end));
+    const et = enderecoTexto(p.endr, p.end), e_=p.endr||{}, endOk = !vazio(e_.logr)&&!vazio(e_.num)&&!vazio(e_.bairro)&&!vazio(e_.cidade)&&!vazio(e_.uf);
+    R(quem+" — endereço", et, et ? (endOk || (vazio(e_.logr) && !vazio(p.end)) ? "OK" : "PENDENTE") : "PENDENTE", et && !endOk && !vazio(e_.logr) ? "falta rua, número, bairro, cidade ou UF" : "");
     R(quem+" — CEP", vazio(p.cep)?"":fmtCEP(p.cep), st(p.cep, vazio(p.cep)||so(p.cep).length===8), "");
     if(eOutorgante){
       const id = idade(p.nasc, ref);
@@ -680,7 +713,9 @@ function conferir(a){
     R(quem+" — CNPJ", vazio(o.cnpj)?"":fmtCNPJ(o.cnpj), st(o.cnpj, v), v===false?"dígito verificador inválido":"");
     if(v===false) at(quem+": CNPJ "+fmtCNPJ(o.cnpj)+" com dígito verificador inválido. Confira no cartão CNPJ.");
     R(quem+" — NIRE", o.nire, vazio(o.nire)?"PENDENTE":"OK");
-    R(quem+" — sede", o.sede, st(o.sede));
+    const es = enderecoTexto(o.endr, o.sede), eo=o.endr||{}, compl_ = !vazio(eo.logr)&&!vazio(eo.num)&&!vazio(eo.bairro)&&!vazio(eo.cidade)&&!vazio(eo.uf);
+    R(quem+" — sede", es, es ? (compl_ || (vazio(eo.logr) && !vazio(o.sede)) ? "OK" : "PENDENTE") : "PENDENTE");
+    R(quem+" — CEP da sede", vazio(o.cep)?"":fmtCEP(o.cep), st(o.cep, vazio(o.cep)||so(o.cep).length===8));
     R(quem+" — ato constitutivo (JUCESP)", o.atoConst, st(o.atoConst));
     R(quem+" — última alteração consolidada", o.ultAlt, st(o.ultAlt));
     R(quem+" — certidão simplificada", dataBR(o.certSimpl), st(o.certSimpl));
@@ -766,7 +801,7 @@ const DOCX_FIXOS = {
 };
 function textoPlano(m){ return m.titulo+"\n\n"+m.seg.map(s=>s.t).join("")+"\n\n"+m.ass.map(x=>"______________________________________________\n"+x.nome+(x.sub?"\n"+x.sub:"")).join("\n\n"); }
 
-return {MODELOS, PODERES, REGIMES, CARGOS_ESC, EMOL, documentos, documentosTexto, novoAto, novaParte, novaPF, montar, conferir, documentXml, DOCX_FIXOS, textoPlano,
+return {UFS, normalizar, enderecoTexto, MODELOS, PODERES, REGIMES, CARGOS_ESC, EMOL, documentos, documentosTexto, novoAto, novaParte, novaPF, montar, conferir, documentXml, DOCX_FIXOS, textoPlano,
   cpfOk, cnpjOk, fmtCPF, fmtCNPJ, fmtCEP, dataBR, dataExtensoSeg, extenso, vazio};
 })();
 if(typeof module!=="undefined") module.exports=N;
@@ -936,7 +971,7 @@ function set(obj, path, val){ const ks=path.split("."); const last=ks.pop(); con
 function fid(path){ return "f-"+path.replace(/\./g,"-"); }
 function campo(path, label, o){
   o=o||{}; const r=arquivo[atual]; const v=get(r,path); const val=v==null?"":v;
-  const cls=["f"]; if(o.dado) cls.push("dado"); if(o.larga) cls.push("larga"); if(o.req) cls.push("req");
+  const cls=["f"]; if(o.cls) cls.push(o.cls); if(o.dado) cls.push("dado"); if(o.larga) cls.push("larga"); if(o.req) cls.push("req");
   if(o.req && N.vazio(val)) cls.push("falta"); if(o.erro) cls.push("erro");
   let ctl;
   if(o.opts) ctl='<select id="'+fid(path)+'" data-p="'+path+'"'+(o.re?' data-re="1"':'')+'><option value="">— selecione —</option>'+o.opts.map(x=>{ const [k,l]=Array.isArray(x)?x:[x,x]; return '<option value="'+H(k)+'"'+(String(val)===String(k)?" selected":"")+'>'+H(l)+'</option>'; }).join("")+'</select>';
@@ -989,13 +1024,25 @@ function formPF(base, p, modo){
     h+='</div></div>';
   }
   h+='<div class="grade">';
-  h+=campo(base+".end","Endereço completo",{req:1,larga:1,ph:"Rua …, nº … – Bairro – Cidade-UF"});
-  h+=campo(base+".cep","CEP",{req:1,dado:1,mask:"cep",ph:"00000-000"});
+  h+='</div>'+formEndereco(base, p, p.end)+'<div class="grade">';
   h+=campo(base+".email","E-mail (opcional)",{tipo:"email"});
   h+=campo(base+".tel","Telefone (opcional)",{tipo:"tel"});
   if(modo!=="outorgado") h+=campo(base+".assin","Assinatura",{opts:[["normal","Assina normalmente"],["nao_alfabetizado","Não alfabetizado(a) — a rogo"],["dificuldade","Dificuldade para assinar — a rogo"]],re:1});
   h+='</div>';
   return h;
+}
+// CEP primeiro: ao completar os 8 dígitos, rua, bairro, cidade e UF são buscados sozinhos
+function formEndereco(base, o, antigo){
+  const legado = N.vazio(o.endr && o.endr.logr) && !N.vazio(antigo);
+  return '<div class="grade-end">'+
+    campo(base+".cep","CEP",{req:1,dado:1,mask:"cep",ph:"00000-000",cls:"c-cep",dica:cepMsg[base]||"Digite o CEP para preencher o endereço"})+
+    campo(base+".endr.logr","Rua / logradouro",{req:!legado,cls:"c-logr",ph:"Rua, Avenida, Praça…",dica:legado?"Endereço antigo: "+antigo:""})+
+    campo(base+".endr.num","Número",{req:!legado,cls:"c-num",ph:"198 ou s/n"})+
+    campo(base+".endr.compl","Complemento (opcional)",{cls:"c-compl",ph:"apto 12, bloco B"})+
+    campo(base+".endr.bairro","Bairro",{req:!legado,cls:"c-bairro"})+
+    campo(base+".endr.cidade","Cidade",{req:!legado,cls:"c-cidade"})+
+    campo(base+".endr.uf","UF",{req:!legado,cls:"c-uf",opts:N.UFS})+
+  '</div>';
 }
 function formPJ(base, pj){
   const err = !N.vazio(pj.cnpj) && !N.cnpjOk(pj.cnpj);
@@ -1003,8 +1050,7 @@ function formPJ(base, pj){
   h+=campo(base+".razao","Razão social",{req:1,larga:1});
   h+=campo(base+".cnpj","CNPJ",{req:1,dado:1,mask:"cnpj",erro:err,dica:err?"Dígito verificador inválido":"",ph:"00.000.000/0000-00"});
   h+=campo(base+".nire","NIRE ou registro no RCPJ",{dado:1});
-  h+=campo(base+".sede","Endereço da sede",{req:1,larga:1});
-  h+=campo(base+".cep","CEP da sede",{req:1,dado:1,mask:"cep"});
+  h+='</div><h4 class="sub-tit">Endereço da sede</h4>'+formEndereco(base, pj, pj.sede)+'<div class="grade">';
   h+=campo(base+".atoConst","Ato constitutivo (nº e data do registro na JUCESP)",{req:1,larga:1,ph:"registrado na JUCESP sob nº …, em …"});
   h+=campo(base+".ultAlt","Última alteração consolidada (nº e data)",{req:1,larga:1,ph:"registrada sob nº …, em …"});
   h+=campo(base+".certSimpl","Certidão simplificada emitida em",{tipo:"date",req:1});
@@ -1056,7 +1102,7 @@ function renderMesa(){
       '<div class="docs-acoes"><button type="button" class="btn p" data-modelo="'+mSel.id+'">Começar esta procuração</button><button type="button" class="btn" data-copiar-docs="'+mSel.id+'">Copiar lista para o cliente</button></div></aside></div>';
     return;
   }
-  const r=arquivo[atual]; const s=STATUS[r.status]||STATUS.rascunho;
+  const r=N.normalizar(arquivo[atual]); const s=STATUS[r.status]||STATUS.rascunho;
   const mod=N.MODELOS.find(x=>x.id===r.modelo);
   let h='<div class="topo"><div><div class="eyebrow"><span>Procuração · '+H(mod?mod.nome+" · "+mod.sub:r.tipo)+'</span><span class="pill '+s[1]+'">'+s[0]+'</span>'+(r.ato.data?'<span>'+N.dataBR(r.ato.data)+'</span>':'')+'</div><h2>'+H(tituloReg(r))+'</h2></div><div class="acoes">'+
     '<button type="button" class="btn" data-acao="duplicar">Duplicar</button>'+
@@ -1155,6 +1201,41 @@ function extensoTxt(iso){ const s=N.dataExtensoSeg(iso); return s? s.map(x=>x[0]
 
 /* ---- eventos da mesa ---- */
 const mesa=$("#mesa");
+/* ---- busca de endereço pelo CEP ---- */
+const cepMsg = {}; const cepCache = {}; let cepUltimo = {};
+async function consultarCep(cep){
+  if(cepCache[cep]) return cepCache[cep];
+  let d;
+  if(servidor) d = await API("GET","/api/cep/"+cep);
+  else {
+    if(db || window.claude) throw new Error("bloqueado");
+    const r = await fetch("https://viacep.com.br/ws/"+cep+"/json/"); const j = await r.json();
+    if(!r.ok || j.erro) throw new Error("não encontrado");
+    d = {logr:j.logradouro||"", bairro:j.bairro||"", cidade:j.localidade||"", uf:j.uf||""};
+  }
+  return cepCache[cep] = d;
+}
+function avisoCep(base, msg){ cepMsg[base]=msg; const el=document.getElementById(fid(base+".cep")); const d=el && el.parentNode.querySelector(".dica"); if(d) d.textContent=msg; }
+async function buscarCep(base, cep){
+  if(cepUltimo[base]===cep) return; cepUltimo[base]=cep;
+  const id=atual; avisoCep(base,"Buscando endereço…");
+  try{
+    const d = await consultarCep(cep);
+    const r = arquivo[id]; if(!r) return;
+    const alvo = get(r, base); if(!alvo) return;
+    alvo.endr = alvo.endr || {};
+    if(d.logr) alvo.endr.logr = d.logr;
+    if(d.bairro) alvo.endr.bairro = d.bairro;
+    if(d.cidade) alvo.endr.cidade = d.cidade;
+    if(d.uf) alvo.endr.uf = d.uf;
+    cepMsg[base] = d.logr ? "Endereço encontrado. Confira e informe o número." : "CEP geral da cidade: informe a rua e o bairro.";
+    salvarDepois(id);
+    if(atual===id){ redesenha(); const n=document.getElementById(fid(base+(d.logr?".endr.num":".endr.logr"))); if(n) n.focus(); }
+  }catch(e){
+    cepUltimo[base]=null;
+    avisoCep(base, e.message==="bloqueado" ? "A busca de CEP não funciona no link do Claude; preencha o endereço (no servidor do cartório ela é automática)." : "CEP não encontrado. Confira o número ou preencha o endereço.");
+  }
+}
 mesa.addEventListener("input",e=>{
   const el=e.target; const p=el.dataset.p; if(!p||!atual) return;
   let v=el.value;
@@ -1162,6 +1243,7 @@ mesa.addEventListener("input",e=>{
   if(el.dataset.mask==="cnpj"){ v=N.fmtCNPJ(v); el.value=v; }
   if(el.dataset.mask==="cep"){ v=N.fmtCEP(v); el.value=v; }
   set(arquivo[atual], p, v);
+  if(el.dataset.mask==="cep" && v.replace(/\D/g,"").length===8) buscarCep(p.replace(/\.cep$/,""), v.replace(/\D/g,""));
   if(el.tagName!=="SELECT") { const lab=el.closest("label.f"); if(lab) lab.classList.toggle("falta", lab.classList.contains("falta") && !v); }
   salvarDepois(atual);
 });
