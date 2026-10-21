@@ -273,7 +273,9 @@ async function tratar(req, res) {
     if (req.method === "PUT") {
       let corpo; try { corpo = await lerCorpo(req); } catch (e) { return enviar(res, 400, { erro: "pedido inválido" }); }
       if (!corpo || !Array.isArray(corpo.escreventes)) return enviar(res, 400, { erro: "pedido inválido" });
-      gravarJSON(ARQ_CARTORIO, { escreventes: corpo.escreventes });
+      const atual = lerJSON(ARQ_CARTORIO, {});
+      const padroes = corpo.padroes && typeof corpo.padroes === "object" && !Array.isArray(corpo.padroes) ? corpo.padroes : (atual.padroes || {});
+      gravarJSON(ARQ_CARTORIO, { escreventes: corpo.escreventes, padroes });
       avisar({ tipo: "cartorio" });
       return enviar(res, 200, { ok: true });
     }

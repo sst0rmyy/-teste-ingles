@@ -44,6 +44,10 @@ button,input,select,textarea{font:inherit;color:inherit}
   padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
 @media (max-width:900px){.app{grid-template-columns:minmax(0,1fr)} .arquivo{border-right:0;border-bottom:1px solid var(--linha)}}
 .arquivo{background:var(--painel);border-right:1px solid var(--linha);padding:18px 16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.arquivo-acoes{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.lista-cad{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.lista-cad li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dashed var(--linha);flex-wrap:wrap}
+.lista-cad li:last-child{border-bottom:0}
 .arquivo-topo{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
 .arquivo-topo h2{font:600 12px/1.3 var(--f-corpo);letter-spacing:.08em;text-transform:uppercase;color:var(--texto-2);margin:0}
 .contagem{font:500 12px var(--f-dado);color:var(--texto-3)}
@@ -140,6 +144,7 @@ label.doc.feito .doc-txt{color:var(--texto-3);text-decoration:line-through;text-
 .bloco > :last-child{margin-bottom:18px}
 .bloco > * + *{margin-top:12px}
 .bloco > h3:first-child,.bloco > .bloco-topo:first-child{padding-bottom:12px;border-bottom:1px solid var(--linha);margin-left:0;margin-right:0;padding-left:18px;padding-right:18px}
+.bloco > .seg{align-self:flex-start}
 .bloco-topo{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 .grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px 14px}
 .grade .larga{grid-column:1/-1}
@@ -217,7 +222,7 @@ label.f.info .dica{color:var(--acento)}
 </header>
 <div class="app">
   <aside class="arquivo" aria-label="Biblioteca">
-    <button class="btn p" id="bt-nova" type="button">+ Nova procuração</button>
+    <div class="arquivo-acoes"><button class="btn p" id="bt-nova" type="button">+ Nova procuração</button><button class="btn" id="bt-padroes" type="button" title="Escrevente, substabelecimento, prazo e emolumentos que entram em toda procuração nova">Valores salvos</button></div>
     <div class="arquivo-topo"><h2>Biblioteca</h2><span class="contagem" id="contagem"></span></div>
     <div class="busca-wrap"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="M14 14l4 4"/></svg>
     <input class="busca" id="busca" type="search" placeholder="Nome, CPF ou CNPJ" aria-label="Buscar"></div>
@@ -933,6 +938,8 @@ let atual = null;          // id aberto
 let etapa = "ato";
 let filtro = "todas", termo = "";
 let escreventes = [];
+let padroes = {};        // valores salvos que entram em toda procuração nova
+let tela = "trabalho";   // "trabalho" ou "padroes"
 let fichaAberta = false;
 let escolhido = "amplos_pf";  // modelo em destaque na tela de nova procuração
 
@@ -997,7 +1004,9 @@ async function iniciar(){
       aplicarRemoto(novo);
       estado("Biblioteca compartilhada · "+Object.keys(arquivo).length+" procuração(ões)");
     }, err=>estado("Biblioteca indisponível: "+err.message));
-    db.doc("config/cartorio").onSnapshot(s=>{ const d=s.data(); escreventes=d&&d.escreventes ? JSON.parse(JSON.stringify(d.escreventes)) : []; if(etapa==="ato" && atual) renderMesa(); }, ()=>{});
+    db.doc("config/cartorio").onSnapshot(s=>{ const d=s.data(); escreventes=d&&d.escreventes ? JSON.parse(JSON.stringify(d.escreventes)) : [];
+      if(!cfgSujo) padroes=d&&d.padroes ? JSON.parse(JSON.stringify(d.padroes)) : {};
+      if(!(document.activeElement && document.activeElement.closest && document.activeElement.closest(".mesa"))) redesenha(); }, ()=>{});
     return;
   }
   // servidor do cartório?
@@ -1010,6 +1019,7 @@ async function iniciar(){
   if(servidor){ iniciarServidor(); return; }
   modoLocal = true; arquivo = lsLer();
   try{ escreventes = JSON.parse(localStorage.getItem(LS_KEY+"-esc")||"[]"); }catch(e){ escreventes=[]; }
+  try{ padroes = JSON.parse(localStorage.getItem(LS_KEY+"-padroes")||"{}"); }catch(e){ padroes={}; }
   estado("Modo local: as procurações ficam salvas apenas neste navegador.");
   renderLista(); renderMesa();
 }
@@ -1021,7 +1031,7 @@ async function iniciarServidor(){
   const recarregar = async () => {
     try{
       aplicarRemoto(await API("GET","/api/procuracoes"));
-      const c=await API("GET","/api/cartorio"); escreventes=c.escreventes||[];
+      const c=await API("GET","/api/cartorio"); escreventes=c.escreventes||[]; if(!cfgSujo) padroes=c.padroes||{};
       estado("Servidor do cartório · "+Object.keys(arquivo).length+" procuração(ões)");
     }catch(e){ estado("Servidor desconectado: "+e.message); }
   };
@@ -1031,11 +1041,15 @@ async function iniciarServidor(){
   ev.onerror = () => estado("Reconectando ao servidor do cartório…");
   ev.onopen = () => recarregar();
 }
+let cfgSujo=false, cfgTimer=null;
 function salvarEscreventes(){
-  if(db) db.doc("config/cartorio").set({escreventes}).catch(()=>toast("Não foi possível salvar o cadastro"));
-  else if(servidor) API("PUT","/api/cartorio",{escreventes}).catch(()=>toast("Não foi possível salvar o cadastro"));
-  else try{ localStorage.setItem(LS_KEY+"-esc", JSON.stringify(escreventes)); }catch(e){}
+  cfgSujo=false;
+  const corpo={escreventes, padroes:JSON.parse(JSON.stringify(padroes))};
+  if(db) db.doc("config/cartorio").set(corpo).catch(()=>toast("Não foi possível salvar os valores do cartório"));
+  else if(servidor) API("PUT","/api/cartorio",corpo).catch(()=>toast("Não foi possível salvar os valores do cartório"));
+  else try{ localStorage.setItem(LS_KEY+"-esc", JSON.stringify(escreventes)); localStorage.setItem(LS_KEY+"-padroes", JSON.stringify(padroes)); }catch(e){}
 }
+function salvarConfigDepois(){ cfgSujo=true; clearTimeout(cfgTimer); cfgTimer=setTimeout(()=>{ salvarEscreventes(); estado("Valores salvos atualizados às "+hora()); }, 600); }
 
 /* ---- biblioteca ---- */
 const STATUS = {rascunho:["Rascunho","pend"], conferida:["Conferida","inf"], lavrada:["Lavrada","ok"]};
@@ -1069,13 +1083,21 @@ function renderLista(){
 }
 $("#filtros").addEventListener("click",e=>{ const b=e.target.closest("[data-f]"); if(!b) return; filtro=b.dataset.f; renderLista(); });
 $("#busca").addEventListener("input",e=>{ termo=e.target.value.trim(); renderLista(); });
-$("#lista").addEventListener("click",e=>{ const b=e.target.closest("[data-id]"); if(!b) return; atual=b.dataset.id; etapa="ato"; fichaAberta=false; renderLista(); renderMesa(); });
-$("#bt-nova").addEventListener("click",()=>{ atual=null; renderLista(); renderMesa(); });
+$("#lista").addEventListener("click",e=>{ const b=e.target.closest("[data-id]"); if(!b) return; atual=b.dataset.id; tela="trabalho"; etapa="ato"; fichaAberta=false; renderLista(); renderMesa(); });
+$("#bt-nova").addEventListener("click",()=>{ atual=null; tela="trabalho"; renderLista(); renderMesa(); });
+$("#bt-padroes").addEventListener("click",()=>{ atual=null; tela="padroes"; renderLista(); renderMesa(); window.scrollTo(0,0); });
 
+// valores salvos entram na procuração nova; o que não estiver salvo fica em branco
+function aplicarPadroes(r){
+  if(padroes.escNome){ r.ato.escNome=padroes.escNome; r.ato.escCargo=padroes.escCargo||""; }
+  if(padroes.substab) r.substab=padroes.substab;
+  if(padroes.prazo){ r.prazo=padroes.prazo; r.prazoTexto=padroes.prazoTexto||""; }
+  if(padroes.emol) Object.keys(r.emol).forEach(k=>{ if(padroes.emol[k]) r.emol[k]=padroes.emol[k]; });
+}
 function criar(modeloId){
   const id=uid(); const r=N.novoAto(modeloId);
   r.ato.data=hojeISO(); r.criadoEm=new Date().toISOString();
-  if(escreventes.length===1){ r.ato.escNome=escreventes[0].nome; r.ato.escCargo=escreventes[0].cargo; }
+  aplicarPadroes(r);
   arquivo[id]=r; atual=id; etapa="ato"; salvarDepois(id); renderMesa();
 }
 
@@ -1220,6 +1242,7 @@ function renderMesa(){
   const mesa=$("#mesa");
   // a altura travada só vale enquanto a mesma procuração estiver aberta
   if(mesaDe!==atual){ mesa.style.minHeight=""; mesaDe=atual; }
+  if(tela==="padroes" && !atual){ mesa.innerHTML=telaPadroes(); return; }
   if(!atual || !arquivo[atual]){
     const mSel=N.MODELOS.find(m=>m.id===escolhido)||N.MODELOS[0];
     const card=m=>'<button type="button" class="modelo'+(m.id===mSel.id?" on":"")+'" data-ver="'+m.id+'" aria-pressed="'+(m.id===mSel.id)+'"><b>'+H(m.nome)+'</b><span>'+H(m.sub)+'</span><span class="tags">'+
@@ -1248,6 +1271,52 @@ function renderMesa(){
   h+='<div class="painel">'+painel(r)+'</div></div>';
   mesa.innerHTML=h;
 }
+/* ---- valores salvos ---- */
+function campoPd(path, label, o){
+  o=o||{}; const v=get(padroes,path); const val=v==null?"":v;
+  return '<label class="f'+(o.dado?" dado":"")+(o.larga?" larga":"")+'"><span class="rot">'+H(label)+'</span><input id="pd-'+path.replace(/\./g,"-")+'" data-pd="'+path+'" value="'+H(val)+'" placeholder="'+H(o.ph||"")+'"'+(o.list?' list="'+o.list+'"':'')+' autocomplete="off">'+(o.dica?'<span class="dica">'+H(o.dica)+'</span>':'')+'</label>';
+}
+function segPd(path, opcoes){
+  const v=get(padroes,path)||"";
+  return '<span class="seg" role="group">'+opcoes.map(([k,l])=>'<button type="button" data-pdseg="'+path+'" data-v="'+k+'" class="'+(v===k?"on":"")+'">'+H(l)+'</button>').join("")+'</span>';
+}
+function resumoPadroes(){
+  const l=[];
+  if(padroes.escNome) l.push("escrevente "+padroes.escNome);
+  if(padroes.substab) l.push("substabelecimento "+{VEDADO:"vedado",COM:"com reserva",SEM:"sem reserva"}[padroes.substab]);
+  if(padroes.prazo) l.push("prazo "+(padroes.prazo==="INDETERMINADO"?"indeterminado":padroes.prazoTexto||"definido"));
+  if(padroes.emol && Object.values(padroes.emol).some(Boolean)) l.push("emolumentos");
+  return l;
+}
+function telaPadroes(){
+  const res=resumoPadroes();
+  let h='<div class="topo"><div><div class="eyebrow">Configuração do cartório</div><h2>Valores salvos</h2></div>'+
+    (res.length?'<div class="acoes"><button type="button" class="btn perigo" data-pdacao="limparTudo">Remover todos os valores salvos</button></div>':'')+'</div>';
+  h+='<p class="intro">Estes valores entram sozinhos em toda procuração nova, que já começa pronta. Procurações já feitas não mudam. Para deixar de preencher algo automaticamente, use o botão Remover da seção.</p>';
+  h+='<div class="painel">';
+  // escrevente
+  h+='<section class="bloco"><div class="bloco-topo"><h3>Escrevente padrão</h3>'+(padroes.escNome?'<button type="button" class="mini" data-pdacao="limparEsc">Remover</button>':'<span class="pill pend">não definido</span>')+'</div>';
+  if(escreventes.length) h+='<div class="biblio">'+escreventes.map((e,i)=>'<button type="button" class="chip'+(padroes.escNome===e.nome?" on":"")+'" data-pdacao="escDe" data-i="'+i+'">'+H(e.nome)+' · '+H(e.cargo)+'</button>').join("")+'</div>';
+  h+='<div class="grade">'+campoPd("escNome","Nome completo")+campoPd("escCargo","Cargo",{list:"cargos-pd",dica:"Ex.: Substituta, Escrevente Autorizada"})+'</div>';
+  h+='<datalist id="cargos-pd">'+N.CARGOS_ESC.map(c=>'<option value="'+H(c)+'">').join("")+'</datalist></section>';
+  // cadastro
+  h+='<section class="bloco"><div class="bloco-topo"><h3>Escreventes cadastrados</h3><span class="aviso">'+escreventes.length+' cadastrado'+(escreventes.length===1?'':'s')+'</span></div>';
+  h+= escreventes.length ? '<ul class="lista-cad">'+escreventes.map((e,i)=>'<li><span><b>'+H(e.nome)+'</b> · '+H(e.cargo)+(padroes.escNome===e.nome?' <span class="pill ok">padrão</span>':'')+'</span><button type="button" class="mini" data-pdacao="rmEsc" data-i="'+i+'">Remover</button></li>').join("")+'</ul>'
+    : '<p class="aviso">Nenhum escrevente cadastrado. Preencha o escrevente padrão acima e clique em "Cadastrar".</p>';
+  h+='<div><button type="button" class="mini" data-pdacao="cadEsc">Cadastrar o escrevente padrão na lista</button></div></section>';
+  // substabelecimento e prazo
+  h+='<section class="bloco"><div class="bloco-topo"><h3>Substabelecimento padrão</h3>'+(padroes.substab?'<button type="button" class="mini" data-pdacao="limpar" data-k="substab">Remover</button>':'')+'</div>'+
+    segPd("substab",[["VEDADO","Vedado"],["COM","Permitido com reserva"],["SEM","Permitido sem reserva"]])+'</section>';
+  h+='<section class="bloco"><div class="bloco-topo"><h3>Prazo de validade padrão</h3>'+(padroes.prazo?'<button type="button" class="mini" data-pdacao="limpar" data-k="prazo">Remover</button>':'')+'</div>'+
+    segPd("prazo",[["INDETERMINADO","Indeterminado"],["DEFINIDO","Definido"]])+(padroes.prazo==="DEFINIDO"?'<div class="grade">'+campoPd("prazoTexto","Prazo",{ph:"1 (um) ano a contar desta data"})+'</div>':'')+'</section>';
+  // emolumentos
+  const temEmol = padroes.emol && Object.values(padroes.emol).some(Boolean);
+  h+='<section class="bloco"><div class="bloco-topo"><h3>Emolumentos padrão</h3>'+(temEmol?'<button type="button" class="mini" data-pdacao="limpar" data-k="emol">Remover</button>':'')+'</div>'+
+    '<p class="aviso">Use os valores da tabela vigente. Quando a tabela mudar, atualize aqui; as procurações novas já saem com os valores certos.</p><div class="grade">'+
+    N.EMOL.map(([k,l])=>campoPd("emol."+k,l+" (R$)",{dado:1,ph:"0,00"})).join("")+campoPd("emol.total","Total (R$)",{dado:1,ph:"0,00"})+'</div></section>';
+  h+='</div>';
+  return h;
+}
 function faltasPorEtapa(r){
   const cf=N.conferir(r); const q={ato:0,outorgantes:0,outorgados:0,poderes:0,fecho:0,conferencia:0}; let at="ato";
   cf.rows.forEach(x=>{ if(x.sec){ at = /^Outorgante/.test(x.sec)?"outorgantes":/^Outorgado/.test(x.sec)?"outorgados":x.sec==="Poderes"?"poderes":x.sec==="Encerramento"?"fecho":x.sec==="Verificação dos documentos"?null:"ato"; return; }
@@ -1266,7 +1335,10 @@ function painel(r){
     if(escreventes.length) h+='<div class="biblio">'+escreventes.map((e,i)=>'<button type="button" class="chip'+(r.ato.escNome===e.nome?" on":"")+'" data-acao="usarEsc" data-i="'+i+'">'+H(e.nome)+' · '+H(e.cargo)+'</button>').join("")+'</div>';
     h+='<div class="grade">'+campo("ato.escNome","Nome completo",{req:1})+campo("ato.escCargo","Cargo",{req:1,list:"cargos",dica:"Entra como \"perante mim, [cargo] da Tabeliã…\""})+'</div>';
     h+='<datalist id="cargos">'+N.CARGOS_ESC.map(c=>'<option value="'+H(c)+'">').join("")+'</datalist>';
-    h+='<div><button type="button" class="mini" data-acao="salvarEsc">Guardar no cadastro de escreventes</button></div></section>';
+    h+='<div class="biblio">'+
+      (padroes.escNome && (padroes.escNome!==r.ato.escNome || (padroes.escCargo||"")!==r.ato.escCargo) ? '<button type="button" class="mini" data-acao="usarEscPadrao">Usar o padrão ('+H(padroes.escNome)+')</button>' : '')+
+      (padroes.escNome && padroes.escNome===r.ato.escNome ? '<span class="pill ok">escrevente padrão</span><button type="button" class="mini" data-pdacao="limparEsc">Remover padrão</button>' : '<button type="button" class="mini" data-acao="escPadrao">Salvar como escrevente padrão</button>')+
+      '<button type="button" class="mini" data-acao="salvarEsc">Guardar no cadastro de escreventes</button></div></section>';
     const lst=N.documentos(r).flatMap(g=>g.itens), ok=lst.filter(x=>r.docs&&r.docs[x.id]).length;
     h+='<section class="bloco"><div class="bloco-topo"><h3>Documentos necessários</h3><span class="aviso" id="docs-cont">'+ok+' de '+lst.length+' apresentados</span></div>'+
       '<p class="aviso">Marque cada documento conforme o cliente apresentar. A lista muda com o tipo, as partes e os poderes.</p>'+listaDocs(r,true)+
@@ -1299,6 +1371,10 @@ function painel(r){
     h+='<section class="bloco"><h3>Emolumentos e selo</h3><span class="aviso">Informe os valores da tabela vigente. Campos vazios saem como R$ [PENDENTE].</span><div class="grade">'+
       N.EMOL.map(([k,l])=>campo("emol."+k,l+" (R$)",{dado:1,ph:"0,00"})).join("")+campo("emol.total","Total (R$)",{dado:1,ph:"0,00"})+campo("selo","Selo digital",{dado:1,larga:1,dica:"Pode ficar em branco até a lavratura"})+'</div></section>';
     const pres=[]; r.outorgantes.forEach(o=>{ if(o.tp==="PF") pres.push(o.pf); else o.pj.reps.forEach(x=>pres.push(x)); });
+    const res=resumoPadroes();
+    h+='<section class="bloco"><div class="bloco-topo"><h3>Valores salvos</h3>'+(res.length?'<span class="aviso">Hoje: '+H(res.join(", "))+'</span>':'')+'</div>'+
+      '<p class="aviso">Guarde o substabelecimento, o prazo e os emolumentos desta procuração para que as próximas já comecem com eles.</p>'+
+      '<div class="biblio"><button type="button" class="mini" data-acao="fechoPadrao">Salvar estes valores como padrão</button><button type="button" class="mini" data-pdacao="abrir">Ver ou remover valores salvos</button></div></section>';
     if(pres.some(p=>p.assin && p.assin!=="normal")) h+='<section class="bloco"><h3>Assinatura a rogo</h3><div class="grade">'+campo("rogo.nome","Quem assina a rogo",{req:1})+campo("rogo.qualif","Qualificação (nacionalidade, documento, CPF)",{req:1,larga:1})+campo("rogo.t1","Testemunha 1 (nome e documento)",{req:1,larga:1})+campo("rogo.t2","Testemunha 2 (nome e documento)",{req:1,larga:1})+'</div></section>';
     return h;
   }
@@ -1382,7 +1458,9 @@ async function buscarCep(base, cep){
   }
 }
 mesa.addEventListener("input",e=>{
-  const el=e.target; const p=el.dataset.p; if(!p||!atual) return;
+  const el=e.target;
+  if(el.dataset.pd){ const ks=el.dataset.pd.split("."); if(ks.length>1 && !padroes[ks[0]]) padroes[ks[0]]={}; set(padroes, el.dataset.pd, el.value); salvarConfigDepois(); return; }
+  const p=el.dataset.p; if(!p||!atual) return;
   let v=el.value;
   if(el.dataset.mask==="cpf"){ v=N.fmtCPF(v); el.value=v; }
   if(el.dataset.mask==="cnpj"){ v=N.fmtCNPJ(v); el.value=v; }
@@ -1415,6 +1493,18 @@ mesa.addEventListener("focusout",e=>{
 });
 mesa.addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b) return;
+  if(b.dataset.pdseg){ set(padroes,b.dataset.pdseg,b.dataset.v); if(b.dataset.pdseg==="prazo" && b.dataset.v!=="DEFINIDO") padroes.prazoTexto=""; salvarConfigDepois(); redesenha(); return; }
+  if(b.dataset.pdacao){ const pa=b.dataset.pdacao, i=+b.dataset.i;
+    if(pa==="abrir"){ atual=null; tela="padroes"; renderLista(); renderMesa(); window.scrollTo(0,0); return; }
+    if(pa==="limparEsc"){ delete padroes.escNome; delete padroes.escCargo; toast("Escrevente padrão removido"); }
+    else if(pa==="escDe"){ padroes.escNome=escreventes[i].nome; padroes.escCargo=escreventes[i].cargo; toast("Escrevente padrão: "+padroes.escNome); }
+    else if(pa==="rmEsc"){ const x=escreventes[i]; escreventes.splice(i,1); toast(x.nome+" removido do cadastro"); }
+    else if(pa==="cadEsc"){ if(!padroes.escNome||!padroes.escCargo){ toast("Preencha nome e cargo do escrevente padrão"); return; }
+      escreventes=escreventes.filter(x=>x.nome!==padroes.escNome).concat([{nome:padroes.escNome.trim(),cargo:padroes.escCargo.trim()}]); toast("Escrevente cadastrado"); }
+    else if(pa==="limpar"){ delete padroes[b.dataset.k]; if(b.dataset.k==="prazo") delete padroes.prazoTexto; toast("Valor salvo removido"); }
+    else if(pa==="limparTudo"){ if(!b.classList.contains("armado")){ b.classList.add("armado"); b.textContent="Confirmar: remover todos"; setTimeout(()=>{ if(b.isConnected){ b.classList.remove("armado"); b.textContent="Remover todos os valores salvos"; } },4000); return; }
+      padroes={}; toast("Todos os valores salvos foram removidos"); }
+    salvarEscreventes(); redesenha(); return; }
   if(b.dataset.modelo){ criar(b.dataset.modelo); return; }
   if(b.dataset.ver){ escolhido=b.dataset.ver; redesenha(); return; }
   if(b.dataset.copiarDocs){ const m=N.MODELOS.find(x=>x.id===b.dataset.copiarDocs); copiar(N.documentosTexto(N.novoAto(m.id),"Documentos para procuração "+m.nome+" ("+m.sub+")"), "Lista copiada"); return; }
@@ -1432,6 +1522,16 @@ mesa.addEventListener("click",e=>{
   else if(ac==="sobe" && i>0){ const t=r.poderes[i]; r.poderes[i]=r.poderes[i-1]; r.poderes[i-1]=t; }
   else if(ac==="desce" && i<r.poderes.length-1){ const t=r.poderes[i]; r.poderes[i]=r.poderes[i+1]; r.poderes[i+1]=t; }
   else if(ac==="flag"){ r.flags[b.dataset.k]=!r.flags[b.dataset.k]; }
+  else if(ac==="usarEscPadrao"){ r.ato.escNome=padroes.escNome; r.ato.escCargo=padroes.escCargo||""; }
+  else if(ac==="escPadrao"){ if(N.vazio(r.ato.escNome)||N.vazio(r.ato.escCargo)){ toast("Preencha nome e cargo do escrevente"); return; }
+    padroes.escNome=r.ato.escNome.trim(); padroes.escCargo=r.ato.escCargo.trim();
+    if(!escreventes.some(x=>x.nome===padroes.escNome)) escreventes=escreventes.concat([{nome:padroes.escNome,cargo:padroes.escCargo}]);
+    salvarEscreventes(); toast("Escrevente padrão salvo: entra em toda procuração nova"); }
+  else if(ac==="fechoPadrao"){
+    if(r.substab) padroes.substab=r.substab;
+    if(r.prazo){ padroes.prazo=r.prazo; padroes.prazoTexto=r.prazo==="DEFINIDO"?r.prazoTexto:""; }
+    if(Object.values(r.emol).some(v=>!N.vazio(v))) padroes.emol=Object.assign({}, r.emol);
+    salvarEscreventes(); toast("Substabelecimento, prazo e emolumentos salvos como padrão"); }
   else if(ac==="usarEsc"){ const x=escreventes[i]; r.ato.escNome=x.nome; r.ato.escCargo=x.cargo; }
   else if(ac==="salvarEsc"){ if(N.vazio(r.ato.escNome)||N.vazio(r.ato.escCargo)){ toast("Preencha nome e cargo do escrevente"); return; }
     escreventes=escreventes.filter(x=>x.nome!==r.ato.escNome).concat([{nome:r.ato.escNome.trim(),cargo:r.ato.escCargo.trim()}]); salvarEscreventes(); toast("Escrevente guardado no cadastro"); }
