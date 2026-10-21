@@ -96,6 +96,30 @@ h3{font:600 12px/1.3 var(--f-corpo);letter-spacing:.08em;text-transform:uppercas
 .modelo span{font-size:12.5px;color:var(--texto-2)}
 .modelo .tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
 
+/* escolha do modelo + documentos */
+.escolha{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+.escolha-modelos{display:flex;flex-direction:column;gap:18px;min-width:0}
+.escolha .modelos{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+.modelo.on{border-color:var(--ouro);box-shadow:0 0 0 2px var(--acento-suave),inset 3px 0 0 var(--ouro);background:#fffaf0}
+.docs-painel{position:sticky;top:calc(72px + env(safe-area-inset-top,0px));background:var(--painel);border:1px solid var(--linha);border-top:3px solid var(--ouro);border-radius:var(--raio);padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--sombra);min-width:0}
+.docs-cab{display:flex;flex-direction:column;gap:1px}
+.docs-cab b{font:600 18px/1.25 var(--f-titulo)}
+.docs-cab span:last-child{font-size:12.5px;color:var(--texto-2)}
+.docs-acoes{display:flex;flex-direction:column;gap:8px}
+.docs{display:flex;flex-direction:column;gap:12px}
+.docs-grupo h4{margin:0 0 4px;font:600 11.5px/1.3 var(--f-corpo);letter-spacing:.05em;text-transform:uppercase;color:var(--marinho-2)}
+.docs-grupo ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.doc{display:flex;gap:9px;align-items:flex-start;padding:6px 2px;border-bottom:1px dashed var(--linha);font-size:13.5px}
+.docs-grupo li:last-child .doc{border-bottom:0}
+span.doc::before{content:"";width:6px;height:6px;margin-top:7px;border-radius:50%;background:var(--ouro);flex:none}
+label.doc{cursor:pointer}
+label.doc input{margin:3px 0 0;width:16px;height:16px;accent-color:var(--acento);flex:none}
+label.doc.feito .doc-txt{color:var(--texto-3);text-decoration:line-through;text-decoration-color:var(--linha-forte)}
+.doc-txt{display:flex;flex-direction:column;gap:1px;min-width:0}
+.doc-txt small{font-size:11.5px;color:var(--texto-3)}
+.bloco .docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px 22px}
+@media (max-width:980px){.escolha{grid-template-columns:minmax(0,1fr)} .docs-painel{position:static}}
+
 /* etapas: coluna estreita à esquerda do formulário */
 .trabalho{display:grid;grid-template-columns:168px minmax(0,1fr);gap:20px;align-items:start}
 .etapas{position:sticky;top:calc(72px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;background:var(--painel);border:1px solid var(--linha);border-radius:var(--raio);padding:6px}
@@ -319,6 +343,88 @@ function novoAto(modeloId){
     rogo:{nome:"", qualif:"", t1:"", t2:""},
     fichaOk:false
   };
+}
+
+
+/* ----- documentos necessários para a lavratura ----- */
+// Monta a lista a partir do modelo, das partes e dos poderes do ato: muda sozinha quando o ato muda.
+const PACTO_REGIMES = ["comunhão universal de bens","separação convencional de bens","participação final nos aquestos"];
+function documentos(a){
+  const grupos = [];
+  const G = (titulo, itens) => { itens = itens.filter(Boolean); if(itens.length) grupos.push({titulo, itens}); };
+  const I = (id, txt, obs) => ({id, txt, obs:obs||""});
+  const ks = a.poderes.map(p=>p.k);
+  const temImovel = ks.includes("imovel_venda");
+  function certidao(p, pre){
+    const ec = p.ec;
+    if(ec==="solteiro") return I(pre+"cert","Certidão de nascimento (inteiro teor ou breve relato)");
+    if(ec==="casado") return I(pre+"cert","Certidão de casamento", temImovel ? "Para venda de imóvel, de preferência emitida há no máximo 90 dias." : "");
+    if(ec==="divorciado") return I(pre+"cert","Certidão de casamento com averbação do divórcio");
+    if(ec==="separado") return I(pre+"cert","Certidão de casamento com averbação da separação judicial");
+    if(ec==="viuvo") return I(pre+"cert","Certidão de casamento com averbação do óbito do cônjuge (ou certidão de óbito)");
+    return I(pre+"cert","Certidão de estado civil: nascimento (solteiro) ou casamento com as averbações (casado, divorciado, separado ou viúvo)");
+  }
+  function pessoaCompleta(p, pre){
+    return [
+      I(pre+"id","Documento de identidade original, com foto e dentro da validade (RG, CNH, RNM ou passaporte)", "Cópias não substituem o original no ato."),
+      I(pre+"cpf","CPF (se o número não constar no documento de identidade)"),
+      certidao(p, pre),
+      p.ec==="casado" && PACTO_REGIMES.includes(p.regime) ? I(pre+"pacto","Escritura de pacto antenupcial com o registro no Registro de Imóveis") : null,
+      p.ue==="sim" ? I(pre+"ue","Escritura ou declaração de união estável, se houver") : null,
+      I(pre+"end","Comprovante de endereço com CEP"),
+    ];
+  }
+  a.outorgantes.forEach((o,i)=>{
+    const q = "Outorgante"+(a.outorgantes.length>1?" "+(i+1):"");
+    if(o.tp==="PJ"){
+      G(q+" · empresa (CNPJ)", [
+        I("ot"+i+"-cs","Contrato social e última alteração contratual consolidada (ou estatuto e ata de eleição da diretoria, se for S/A)"),
+        I("ot"+i+"-jucesp","Certidão simplificada da JUCESP emitida há no máximo 30 dias"),
+        I("ot"+i+"-cnpj","Cartão CNPJ"),
+        o.pj.adm==="conjunta" ? I("ot"+i+"-conj","Presença de todos os administradores exigidos pelo contrato social") : null,
+        temImovel ? I("ot"+i+"-delib","Ata ou deliberação dos sócios autorizando a venda, se o contrato social exigir") : null,
+      ]);
+      o.pj.reps.forEach((r,j)=>G(q+" · representante"+(o.pj.reps.length>1?" "+(j+1):"")+(r.nome?" ("+r.nome+")":""), pessoaCompleta(r,"ot"+i+"r"+j+"-")));
+    } else {
+      const p=o.pf;
+      G(q+(p.nome?" · "+p.nome:"")+" · comparece ao cartório", pessoaCompleta(p,"ot"+i+"-"));
+      if(temImovel && p.ec==="casado" && p.regime!=="separação convencional de bens")
+        G("Cônjuge de "+(p.nome||q.toLowerCase())+" · anuência na venda", [
+          I("ot"+i+"-conj-id","Documento de identidade original e CPF do cônjuge"),
+          I("ot"+i+"-conj-pres","Comparecimento do cônjuge para assinar como outorgante ou anuente","Art. 1.647, I, do Código Civil."),
+        ]);
+      if(p.assin && p.assin!=="normal")
+        G("Assinatura a rogo de "+(p.nome||q.toLowerCase()), [
+          I("ot"+i+"-rogo","Pessoa que assinará a rogo, com documento de identidade e CPF"),
+          I("ot"+i+"-test","Duas testemunhas com documento de identidade e CPF"),
+        ]);
+    }
+  });
+  a.outorgados.forEach((o,i)=>{
+    const q = "Outorgado"+(a.outorgados.length>1?" "+(i+1):"")+" · não precisa comparecer";
+    if(o.tp==="PJ") G(q, [I("od"+i+"-cnpj","Cartão CNPJ e endereço da sede (cópia)"), I("od"+i+"-cs","Contrato social, para conferir o nome empresarial")]);
+    else G(q+(o.pf.nome?" ("+o.pf.nome+")":""), [
+      o.pf.docTipo==="OAB" || ks.includes("adjudicia") ? I("od"+i+"-oab","Cópia da carteira da OAB e endereço profissional") : I("od"+i+"-id","Cópia do documento de identidade e do CPF"),
+      I("od"+i+"-dados","Nome completo, nacionalidade, profissão, estado civil e endereço com CEP"),
+    ]);
+  });
+  const esp = [];
+  if(ks.includes("banco")) esp.push(I("pd-banco","Dados da conta: banco, agência e número (cartão ou extrato)","Alguns bancos só aceitam procuração recente ou com poderes específicos; confirme com a agência."));
+  if(ks.includes("inss")) esp.push(I("pd-inss","Número do benefício (NB): carta de concessão ou extrato do INSS","O INSS costuma exigir procuração com menos de 12 meses e termo de responsabilidade assinado pelo procurador na agência; confirme antes de definir o prazo."));
+  if(temImovel){
+    esp.push(I("pd-mat","Certidão de matrícula atualizada do imóvel (até 30 dias)"));
+    esp.push(I("pd-iptu","Carnê do IPTU ou certidão de valor venal (imóvel urbano); CCIR e ITR (imóvel rural)"));
+    esp.push(I("pd-valor","Valor e condições da venda, se já combinados"));
+    esp.push(I("pd-comp","Dados do comprador, se a venda for para pessoa determinada"));
+  }
+  if(ks.includes("veiculo")) esp.push(I("pd-veic","CRV / ATPV-e ou CRLV-e do veículo, com placa, RENAVAM e chassi"));
+  if(ks.includes("adjudicia")) esp.push(I("pd-proc","Número do processo ou descrição da causa, se a procuração for para fim específico"));
+  G("Para os poderes desta procuração", esp);
+  G("Providências do cartório", [I("ct-cnib","Consulta à Central de Indisponibilidade (CNIB) no "+(a.outorgantes.some(o=>o.tp==="PJ")?"CNPJ/CPF":"CPF")+" de cada outorgante")]);
+  return grupos;
+}
+function documentosTexto(a, titulo){
+  return titulo+"\n\n"+documentos(a).filter(g=>g.titulo!=="Providências do cartório").map(g=>g.titulo.toUpperCase()+"\n"+g.itens.map(x=>"- "+x.txt+(x.obs?" ("+x.obs+")":"")).join("\n")).join("\n\n");
 }
 
 /* ----- redação ----- */
@@ -624,6 +730,8 @@ function conferir(a){
   const difere = todos && !isNaN(informado) && Math.abs(tot-informado)>0.009;
   R("Emolumentos", todos?"informados":"", todos ? (difere?"ATENÇÃO":"OK") : "PENDENTE", difere?"a soma das rubricas é R$ "+tot.toFixed(2).replace(".",","):"");
   if(difere) at("Emolumentos: a soma das rubricas (R$ "+tot.toFixed(2).replace(".",",")+") não confere com o total informado (R$ "+a.emol.total+").");
+  const lista = documentos(a).flatMap(g=>g.itens), entregues = lista.filter(x=>a.docs && a.docs[x.id]).length;
+  R("Documentos apresentados", entregues+" de "+lista.length, entregues===lista.length?"OK":"PENDENTE", entregues<lista.length?"marque na etapa Ato":"");
   R("Selo digital", a.selo, vazio(a.selo)?"PENDENTE":"OK", vazio(a.selo)?"aposto na lavratura":"");
   return {rows, alertas};
 }
@@ -658,7 +766,7 @@ const DOCX_FIXOS = {
 };
 function textoPlano(m){ return m.titulo+"\n\n"+m.seg.map(s=>s.t).join("")+"\n\n"+m.ass.map(x=>"______________________________________________\n"+x.nome+(x.sub?"\n"+x.sub:"")).join("\n\n"); }
 
-return {MODELOS, PODERES, REGIMES, CARGOS_ESC, EMOL, novoAto, novaParte, novaPF, montar, conferir, documentXml, DOCX_FIXOS, textoPlano,
+return {MODELOS, PODERES, REGIMES, CARGOS_ESC, EMOL, documentos, documentosTexto, novoAto, novaParte, novaPF, montar, conferir, documentXml, DOCX_FIXOS, textoPlano,
   cpfOk, cnpjOk, fmtCPF, fmtCNPJ, fmtCEP, dataBR, dataExtensoSeg, extenso, vazio};
 })();
 if(typeof module!=="undefined") module.exports=N;
@@ -677,6 +785,7 @@ let etapa = "ato";
 let filtro = "todas", termo = "";
 let escreventes = [];
 let fichaAberta = false;
+let escolhido = "amplos_pf";  // modelo em destaque na tela de nova procuração
 
 function toast(t){ const d=document.createElement("div"); d.className="toast"; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(),2600); }
 function hojeISO(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
@@ -932,12 +1041,19 @@ function renderMesa(){
   // a altura travada só vale enquanto a mesma procuração estiver aberta
   if(mesaDe!==atual){ mesa.style.minHeight=""; mesaDe=atual; }
   if(!atual || !arquivo[atual]){
-    const card=m=>'<button type="button" class="modelo" data-modelo="'+m.id+'"><b>'+H(m.nome)+'</b><span>'+H(m.sub)+'</span><span class="tags">'+
+    const mSel=N.MODELOS.find(m=>m.id===escolhido)||N.MODELOS[0];
+    const card=m=>'<button type="button" class="modelo'+(m.id===mSel.id?" on":"")+'" data-ver="'+m.id+'" aria-pressed="'+(m.id===mSel.id)+'"><b>'+H(m.nome)+'</b><span>'+H(m.sub)+'</span><span class="tags">'+
         '<span class="pill '+(m.ot==="PJ"?"inf":"ok")+'">'+(m.ot==="PJ"?"CNPJ":"CPF")+'</span>'+(m.poderes.length?'<span class="pill pend">'+m.poderes.length+' poder'+(m.poderes.length>1?'es':'')+'</span>':'')+'</span></button>';
+    const amostra=N.novoAto(mSel.id);
     mesa.innerHTML='<div class="topo"><div><div class="eyebrow">Nova procuração</div><h2>Escolha o modelo do ato</h2></div></div>'+
-      '<p class="intro">Cada modelo já traz os poderes e o tipo de parte. Você preenche os dados, confere a ficha e gera a minuta no padrão oficial do cartório. Tudo fica arquivado na biblioteca.</p>'+
+      '<p class="intro">Selecione um tipo para ver os documentos que o cliente precisa trazer. Depois clique em "Começar esta procuração".</p>'+
+      '<div class="escolha"><div class="escolha-modelos">'+
       '<section class="grupo-modelos"><h3>Pessoa física (CPF)</h3><div class="modelos">'+N.MODELOS.filter(m=>m.ot==="PF").map(card).join("")+'</div></section>'+
-      '<section class="grupo-modelos"><h3>Empresa (CNPJ)</h3><div class="modelos">'+N.MODELOS.filter(m=>m.ot==="PJ").map(card).join("")+'</div></section>';
+      '<section class="grupo-modelos"><h3>Empresa (CNPJ)</h3><div class="modelos">'+N.MODELOS.filter(m=>m.ot==="PJ").map(card).join("")+'</div></section></div>'+
+      '<aside class="docs-painel" aria-live="polite"><div class="docs-cab"><span class="eyebrow">Documentos necessários</span><b>'+H(mSel.nome)+'</b><span>'+H(mSel.sub)+'</span></div>'+
+      listaDocs(amostra,false)+
+      '<p class="aviso">A lista se ajusta ao preencher a procuração (estado civil, cônjuge, assinatura a rogo, poderes incluídos).</p>'+
+      '<div class="docs-acoes"><button type="button" class="btn p" data-modelo="'+mSel.id+'">Começar esta procuração</button><button type="button" class="btn" data-copiar-docs="'+mSel.id+'">Copiar lista para o cliente</button></div></aside></div>';
     return;
   }
   const r=arquivo[atual]; const s=STATUS[r.status]||STATUS.rascunho;
@@ -954,7 +1070,7 @@ function renderMesa(){
 function faltasPorEtapa(r){
   const cf=N.conferir(r); const q={ato:0,outorgantes:0,outorgados:0,poderes:0,fecho:0,conferencia:0}; let at="ato";
   cf.rows.forEach(x=>{ if(x.sec){ at = /^Outorgante/.test(x.sec)?"outorgantes":/^Outorgado/.test(x.sec)?"outorgados":x.sec==="Poderes"?"poderes":x.sec==="Encerramento"?"fecho":"ato"; return; }
-    if(x.status && x.status!=="OK" && !/Selo digital|NIRE/.test(x.campo)) q[at]++; });
+    if(x.status && x.status!=="OK" && !/Selo digital|NIRE|Documentos apresentados/.test(x.campo)) q[at]++; });
   return q;
 }
 function painel(r){
@@ -969,6 +1085,10 @@ function painel(r){
     h+='<div class="grade">'+campo("ato.escNome","Nome completo",{req:1})+campo("ato.escCargo","Cargo",{req:1,list:"cargos",dica:"Entra como \"perante mim, [cargo] da Tabeliã…\""})+'</div>';
     h+='<datalist id="cargos">'+N.CARGOS_ESC.map(c=>'<option value="'+H(c)+'">').join("")+'</datalist>';
     h+='<div><button type="button" class="mini" data-acao="salvarEsc">Guardar no cadastro de escreventes</button></div></section>';
+    const lst=N.documentos(r).flatMap(g=>g.itens), ok=lst.filter(x=>r.docs&&r.docs[x.id]).length;
+    h+='<section class="bloco"><div class="bloco-topo"><h3>Documentos necessários</h3><span class="aviso" id="docs-cont">'+ok+' de '+lst.length+' apresentados</span></div>'+
+      '<p class="aviso">Marque cada documento conforme o cliente apresentar. A lista muda com o tipo, as partes e os poderes.</p>'+listaDocs(r,true)+
+      '<div><button type="button" class="mini" data-acao="copiarDocs">Copiar lista para o cliente</button></div></section>';
     return h;
   }
   if(etapa==="outorgantes") return formPartes(r.outorgantes,"outorgantes","Outorgante");
@@ -1019,6 +1139,18 @@ function painel(r){
   }
   return h;
 }
+function listaDocs(a, marcavel){
+  return '<div class="docs">'+N.documentos(a).map(g=>'<div class="docs-grupo"><h4>'+H(g.titulo)+'</h4><ul>'+g.itens.map(x=>{
+    const feito = marcavel && a.docs && a.docs[x.id];
+    const corpo='<span class="doc-txt">'+H(x.txt)+(x.obs?'<small>'+H(x.obs)+'</small>':'')+'</span>';
+    return '<li>'+(marcavel ? '<label class="doc'+(feito?" feito":"")+'"><input type="checkbox" id="doc-'+H(x.id)+'" data-doc="'+H(x.id)+'"'+(feito?" checked":"")+'>'+corpo+'</label>' : '<span class="doc">'+corpo+'</span>')+'</li>';
+  }).join("")+'</ul></div>').join("")+'</div>';
+}
+function copiar(texto, ok){
+  const reserva=()=>{ const t=document.createElement("textarea"); t.value=texto; t.style.position="fixed"; t.style.opacity="0"; document.body.appendChild(t); t.select();
+    let deu=false; try{ deu=document.execCommand("copy"); }catch(e){} t.remove(); toast(deu?ok:"Não foi possível copiar automaticamente; selecione o texto e use Ctrl+C"); };
+  if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(texto).then(()=>toast(ok), reserva); else reserva();
+}
 function extensoTxt(iso){ const s=N.dataExtensoSeg(iso); return s? s.map(x=>x[0]).join("") : ""; }
 
 /* ---- eventos da mesa ---- */
@@ -1035,6 +1167,10 @@ mesa.addEventListener("input",e=>{
 });
 mesa.addEventListener("change",e=>{
   const el=e.target; if(!atual || !arquivo[atual]) return;
+  if(el.dataset.doc){ const r=arquivo[atual]; r.docs=r.docs||{}; r.docs[el.dataset.doc]=el.checked; salvarDepois(atual);
+    const lab=el.closest(".doc"); if(lab) lab.classList.toggle("feito",el.checked);
+    const tot=document.getElementById("docs-cont"); if(tot){ const l=N.documentos(r).flatMap(g=>g.itens); tot.textContent=l.filter(x=>r.docs[x.id]).length+" de "+l.length+" apresentados"; }
+    return; }
   if(el.dataset.troca){ aplicarModelo(arquivo[atual], el.value); salvarDepois(atual); setTimeout(()=>{ redesenha(); renderLista(); },0); return; }
   if(!el.dataset.p) return;
   if(el.tagName==="SELECT" && get(arquivo[atual], el.dataset.p)!==el.value){ set(arquivo[atual], el.dataset.p, el.value); salvarDepois(atual); }
@@ -1044,6 +1180,8 @@ mesa.addEventListener("change",e=>{
 mesa.addEventListener("click",e=>{
   const b=e.target.closest("button"); if(!b) return;
   if(b.dataset.modelo){ criar(b.dataset.modelo); return; }
+  if(b.dataset.ver){ escolhido=b.dataset.ver; redesenha(); return; }
+  if(b.dataset.copiarDocs){ const m=N.MODELOS.find(x=>x.id===b.dataset.copiarDocs); copiar(N.documentosTexto(N.novoAto(m.id),"Documentos para procuração "+m.nome+" ("+m.sub+")"), "Lista copiada"); return; }
   if(b.dataset.etapa){ etapa=b.dataset.etapa; redesenha(); return; }
   const r=arquivo[atual]; if(!r) return;
   if(b.dataset.seg){ set(r,b.dataset.seg,b.dataset.v); salvarDepois(atual); redesenha(); return; }
@@ -1066,7 +1204,8 @@ mesa.addEventListener("click",e=>{
   else if(ac==="duplicar"){ const id=uid(); const c=JSON.parse(JSON.stringify(r)); c.status="rascunho"; c.fichaOk=false; c.selo=""; c.cnib={resultado:"",hash:""}; c.criadoEm=new Date().toISOString(); arquivo[id]=c; atual=id; salvarDepois(id); toast("Cópia criada como rascunho"); renderMesa(); return; }
   else if(ac==="excluir"){ if(!b.classList.contains("armado")){ b.classList.add("armado"); b.textContent="Confirmar exclusão"; setTimeout(()=>{ if(b.isConnected){ b.classList.remove("armado"); b.textContent="Excluir"; } },4000); return; } excluir(atual); return; }
   else if(ac==="docx"){ baixarDocx(r); return; }
-  else if(ac==="copiar"){ const t=N.textoPlano(N.montar(r)); (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Texto copiado"),()=>toast("Não foi possível copiar; selecione o texto da minuta")); return; }
+  else if(ac==="copiar"){ copiar(N.textoPlano(N.montar(r)), "Texto copiado"); return; }
+  else if(ac==="copiarDocs"){ copiar(N.documentosTexto(r,"Documentos para a procuração de "+tituloReg(r)), "Lista copiada"); return; }
   salvarDepois(atual); redesenha();
 });
 function aplicarModelo(r, id){
