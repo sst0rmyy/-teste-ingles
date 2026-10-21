@@ -190,7 +190,9 @@ async function buscarCep(cep) {
 async function tratar(req, res) {
   const url = new URL(req.url, "http://local");
   const rota = url.pathname;
-  const ip = req.socket.remoteAddress || "";
+  // atrás do "tailscale serve" todo acesso chega como 127.0.0.1; aí o computador de origem vem no X-Forwarded-For
+  let ip = req.socket.remoteAddress || "";
+  if (/^(127\.0\.0\.1|::1|::ffff:127\.0\.0\.1)$/.test(ip) && req.headers["x-forwarded-for"]) ip = String(req.headers["x-forwarded-for"]).split(",")[0].trim();
 
   if (req.method === "GET" && PUBLICOS[rota]) return arquivo(res, ...PUBLICOS[rota]);
 

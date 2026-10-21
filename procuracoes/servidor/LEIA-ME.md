@@ -39,6 +39,47 @@ O sistema roda em um computador do cartório (o "servidor"). Os outros computado
 
 A biblioteca é a mesma para todos. O que um funcionário salva aparece na hora nos outros computadores.
 
+## 6. Acessar de outro lugar (Tailscale)
+Os passos 1 a 5 funcionam **dentro da rede do cartório**. Para usar o sistema de outro lugar (por exemplo, servidor em casa e uso no cartório, ou o contrário), use o **Tailscale**. Ele cria uma rede particular e criptografada entre os seus computadores, como se todos estivessem no mesmo cabo.
+
+> **Não libere a porta 8080 no roteador** e não use o recurso "Funnel" do Tailscale. Os dois deixam o sistema aberto para a internet inteira.
+
+### 6.1 Crie a conta (uma vez só)
+1. Acesse https://tailscale.com e clique em **Get started**.
+2. Entre com uma conta Google ou Microsoft **do cartório**. Todos os computadores vão usar essa mesma conta.
+3. O plano gratuito pessoal atende alguns computadores. Confira os limites atuais no site antes de instalar em muitos.
+
+### 6.2 Instale no computador servidor
+1. Baixe o Tailscale para Windows em https://tailscale.com/download e instale.
+2. Clique no ícone do Tailscale perto do relógio, escolha **Log in** e entre com a conta do cartório.
+3. No painel https://login.tailscale.com/admin/machines aparece o servidor com um nome (ex.: `servidor-cartorio`) e um endereço `100.x.y.z`. Anote os dois.
+4. Ainda nesse painel, clique nos três pontos do servidor e escolha **Disable key expiry**. Assim ele não se desconecta sozinho depois de alguns meses.
+
+### 6.3 Instale em cada computador que vai usar o sistema
+1. Instale o Tailscale e entre com **a mesma conta** (passos 1 e 2 acima).
+2. Abra o Chrome ou o Edge e digite `http://NOME-DO-SERVIDOR:8080` (ex.: `http://servidor-cartorio:8080`). Se o nome não funcionar, use o endereço: `http://100.x.y.z:8080`.
+3. Entre com a senha do cartório. O resto funciona igual ao passo 5.
+
+O Tailscale abre sozinho com o Windows. Se um computador não conseguir acessar, confira se o ícone dele está conectado (**Connected**).
+
+### 6.4 Ativar o endereço https:// (recomendado)
+Com `https://`, o botão **Copiar texto** passa a funcionar, o navegador instala o sistema como aplicativo completo e a conexão ganha mais uma camada de proteção.
+1. No painel do Tailscale, abra **DNS** e confirme que **MagicDNS** está ativado. Na mesma página, em **HTTPS Certificates**, clique em **Enable HTTPS**.
+2. No computador servidor, com o `iniciar.bat` aberto, abra o **Prompt de Comando** e digite:
+   ```
+   tailscale serve --bg 8080
+   ```
+3. O comando mostra o endereço novo, parecido com `https://servidor-cartorio.tail1234.ts.net`. É esse endereço que todos devem usar a partir de agora.
+4. Nos computadores, entre de novo com a senha nesse endereço novo e reinstale o atalho/aplicativo por ele.
+
+O `tailscale serve` continua valendo depois de reiniciar o computador. Para desligar o https, use `tailscale serve reset`.
+
+### 6.5 Se o servidor ficar fora do cartório
+- O computador precisa ficar **ligado e com internet** durante todo o expediente. Sem ele, o cartório fica sem o sistema.
+- Use um **nobreak** se possível. Nas configurações de energia do Windows, deixe **Suspender: Nunca**.
+- A pasta `dados` terá dados pessoais dos clientes fora do cartório. Avalie isso com a responsável pela serventia (LGPD e normas de segurança da informação das serventias) e mantenha o backup em dia.
+- O recomendado é deixar o servidor **no cartório** e usar o Tailscale só para acessar de fora quando preciso.
+
 ## Senha
 - **Trocar a senha:** feche a janela do servidor, dê dois cliques em **`trocar-senha.bat`**, defina a nova senha e abra o `iniciar.bat` de novo. Todos os computadores precisarão entrar com a senha nova.
 - **Sair em um computador:** botão **Sair** no canto superior direito do sistema.
@@ -63,4 +104,6 @@ Quando houver uma versão nova, substitua os arquivos da pasta `procuracoes`, **
 | Funciona no servidor, mas não nos outros computadores | Libere o Node.js no Firewall do Windows (Painel de Controle → Firewall → Permitir um aplicativo → Node.js → Privada). |
 | "A porta 8080 já está em uso" | Já existe um servidor aberto. Feche a outra janela, ou edite o `iniciar.bat` e troque a linha `node servidor.js` por `set PORTA=8081 && node servidor.js`. |
 | O botão "Copiar texto" não copia | Os navegadores só liberam a cópia automática em endereços `https`. Selecione o texto da minuta e use Ctrl+C. O download do Word funciona normalmente. |
+| De fora do cartório não abre | Confira se o Tailscale está conectado nos dois computadores, com a mesma conta, e se o servidor está ligado. Teste primeiro pelo endereço `100.x.y.z:8080`. |
+| Com https, aparece "certificado" ou "não seguro" | Use exatamente o endereço `https://….ts.net` mostrado pelo `tailscale serve`, não o `100.x.y.z`. |
 | O endereço mudou de um dia para o outro | O servidor está sem IP fixo. Peça ao técnico para fixar o IP (passo 1). |
