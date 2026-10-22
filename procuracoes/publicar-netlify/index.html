@@ -1,0 +1,1587 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#fffdf8"><meta name="robots" content="noindex,nofollow"><link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/icone-192.png"><link rel="apple-touch-icon" href="/icone-192.png"><style>[hidden]{display:none!important}</style></head><body><title>Livro de Procurações</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: barra institucional no topo; biblioteca (fichário) à esquerda; mesa de trabalho com etapas numeradas e folha A4 de pré-visualização. */
+:root{
+  /* cartório: marfim, branco e dourado envelhecido; texto em sépia escuro */
+  --fundo:#f2eee4; --painel:#fffdf8; --painel-2:#f8f4ea; --linha:#e4dac6; --linha-forte:#cfc0a2;
+  --texto:#2a251d; --texto-2:#625a4b; --texto-3:#8b8271;
+  --marinho:#3a2f1c; --marinho-2:#7a5c1e; --sobre-marinho:#ffffff; --sobre-marinho-2:#7d7262;
+  --acento:#8c6a1d; --acento-suave:#f5ecd4; --ouro:#c4a052;
+  --ok:#2f6b3a; --ok-suave:#e6f0e3; --pend:#a14a12; --pend-suave:#fbe9db; --at:#a8261d; --at-suave:#f9e5e2;
+  --mesa-folha:#e6dfd0; --sombra:0 1px 2px rgba(58,47,28,.06);
+  --f-titulo:"IBM Plex Serif", Georgia, "Times New Roman", serif;
+  --f-corpo:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-dado:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  --f-minuta: Tahoma, Verdana, "DejaVu Sans", sans-serif;
+  --raio:6px; color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--fundo);color:var(--texto);font:14px/1.5 var(--f-corpo);margin:0;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--painel)}
+table{font-size:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--acento);outline-offset:2px}
+
+/* barra institucional */
+.barra{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--painel);color:var(--texto);border-bottom:2px solid var(--ouro);box-shadow:0 1px 0 var(--linha);
+  padding:10px max(16px, env(safe-area-inset-right,0px)) 10px max(16px, env(safe-area-inset-left,0px));display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap}
+.marca{display:flex;align-items:center;gap:12px;min-width:0}
+.selo{width:36px;height:36px;border-radius:50%;border:1.5px solid var(--ouro);box-shadow:inset 0 0 0 3px var(--painel),inset 0 0 0 4px var(--ouro);color:var(--marinho-2);background:var(--painel);display:grid;place-items:center;font:600 13px/1 var(--f-titulo);letter-spacing:.04em;flex:none}
+.marca-txt{display:flex;flex-direction:column;min-width:0}
+.marca-txt b{font:600 17px/1.2 var(--f-titulo);letter-spacing:.01em;color:var(--marinho)}
+.marca-txt small{font-size:11.5px;color:var(--sobre-marinho-2);letter-spacing:.03em}
+.sinc{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--sobre-marinho-2)}
+.barra-dir{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.sinc::before{content:"";width:7px;height:7px;border-radius:50%;background:#22a05a;flex:none}
+.sinc[data-t="aviso"]::before{background:#e0a127} .sinc[data-t="erro"]::before{background:#d92d20}
+
+/* estrutura */
+.app{display:grid;grid-template-columns:330px minmax(0,1fr);min-height:calc(100vh - 56px);
+  padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+@media (max-width:900px){.app{grid-template-columns:minmax(0,1fr)} .arquivo{border-right:0;border-bottom:1px solid var(--linha)}}
+.arquivo{background:var(--painel);border-right:1px solid var(--linha);padding:18px 16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.arquivo-acoes{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.lista-cad{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.lista-cad li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 0;border-bottom:1px dashed var(--linha);flex-wrap:wrap}
+.lista-cad li:last-child{border-bottom:0}
+.arquivo-topo{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.arquivo-topo h2{font:600 12px/1.3 var(--f-corpo);letter-spacing:.08em;text-transform:uppercase;color:var(--texto-2);margin:0}
+.contagem{font:500 12px var(--f-dado);color:var(--texto-3)}
+.busca-wrap{position:relative}
+.busca-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--texto-3)}
+.busca{width:100%;padding:8px 10px 8px 32px;border:1px solid var(--linha-forte);border-radius:var(--raio);background:var(--painel)}
+.filtros{display:flex;gap:4px;flex-wrap:wrap}
+.chip{border:1px solid var(--linha);background:var(--painel);border-radius:4px;padding:3px 9px;font-size:12px;cursor:pointer;color:var(--texto-2)}
+.chip:hover{border-color:var(--linha-forte);color:var(--texto)}
+.chip.on{background:var(--acento-suave);border-color:var(--acento);color:var(--acento);font-weight:600}
+.lista{display:flex;flex-direction:column;min-width:0;border-top:1px solid var(--linha)}
+.item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;text-align:left;width:100%;border:0;border-bottom:1px solid var(--linha);background:none;padding:10px 8px 10px 12px;cursor:pointer;position:relative}
+.item:hover{background:var(--painel-2)}
+.item.on{background:var(--acento-suave)}
+.item.on::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:3px;border-radius:2px;background:var(--ouro)}
+.item b{font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .data{font:400 11.5px var(--f-dado);color:var(--texto-3);text-align:right}
+.item .meta{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--texto-2)}
+.vazio{border:1px dashed var(--linha-forte);border-radius:var(--raio);padding:14px;color:var(--texto-2);font-size:13px;background:var(--painel-2)}
+.estado{font-size:11.5px;color:var(--texto-3);margin-top:auto}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:3px;white-space:nowrap}
+.pill.ok{background:var(--ok-suave);color:var(--ok)}
+.pill.pend{background:var(--pend-suave);color:var(--pend)}
+.pill.at{background:var(--at-suave);color:var(--at)}
+.pill.inf{background:var(--acento-suave);color:var(--acento)}
+
+/* mesa */
+.mesa{padding:22px max(16px, env(safe-area-inset-right,0px)) 48px 28px;min-width:0;display:flex;flex-direction:column;gap:18px;max-width:1180px;width:100%}
+@media (max-width:900px){.mesa{padding-left:max(16px, env(safe-area-inset-left,0px))}}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--linha-forte);background:var(--painel);border-radius:var(--raio);padding:7px 14px;cursor:pointer;font-weight:500;font-size:13.5px;box-shadow:var(--sombra)}
+.btn:hover{border-color:var(--texto-3)}
+.btn.p{background:var(--acento);border-color:#7a5c17;color:#fff;background-image:linear-gradient(#9a7626,#8c6a1d)}
+.btn.p:hover{filter:brightness(1.06)}
+.btn.perigo{color:var(--at)}
+.btn.perigo.armado{background:var(--at);color:#fff;border-color:var(--at)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+h2{font:600 22px/1.25 var(--f-titulo);margin:0;text-wrap:balance}
+h3{font:600 12px/1.3 var(--f-corpo);letter-spacing:.08em;text-transform:uppercase;color:var(--texto-2);margin:0}
+.eyebrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--texto-2);margin-bottom:4px}
+.topo{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-end;padding-bottom:16px;border-bottom:1px solid var(--linha)}
+.topo .acoes{display:flex;gap:8px;flex-wrap:wrap}
+.intro{color:var(--texto-2);max-width:68ch;margin:0}
+
+/* modelos */
+.grupo-modelos{display:flex;flex-direction:column;gap:10px}
+.modelos{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.modelo{border:1px solid var(--linha);background:var(--painel);border-radius:var(--raio);padding:14px 14px 12px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:4px;box-shadow:var(--sombra)}
+.modelo:hover{border-color:var(--acento)}
+.modelo b{font:600 15px/1.3 var(--f-titulo)}
+.modelo span{font-size:12.5px;color:var(--texto-2)}
+.modelo .tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+
+/* escolha do modelo + documentos */
+.escolha{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+.escolha-modelos{display:flex;flex-direction:column;gap:18px;min-width:0}
+.escolha .modelos{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}
+.modelo.on{border-color:var(--ouro);box-shadow:0 0 0 2px var(--acento-suave),inset 3px 0 0 var(--ouro);background:#fffaf0}
+.docs-painel{position:sticky;top:calc(72px + env(safe-area-inset-top,0px));background:var(--painel);border:1px solid var(--linha);border-top:3px solid var(--ouro);border-radius:var(--raio);padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--sombra);min-width:0}
+.docs-cab{display:flex;flex-direction:column;gap:1px}
+.docs-cab b{font:600 18px/1.25 var(--f-titulo)}
+.docs-cab span:last-child{font-size:12.5px;color:var(--texto-2)}
+.docs-acoes{display:flex;flex-direction:column;gap:8px}
+.docs{display:flex;flex-direction:column;gap:12px}
+.docs-grupo h4{margin:0 0 4px;font:600 11.5px/1.3 var(--f-corpo);letter-spacing:.05em;text-transform:uppercase;color:var(--marinho-2)}
+.docs-grupo ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.doc{display:flex;gap:9px;align-items:flex-start;padding:6px 2px;border-bottom:1px dashed var(--linha);font-size:13.5px}
+.docs-grupo li:last-child .doc{border-bottom:0}
+span.doc::before{content:"";width:6px;height:6px;margin-top:7px;border-radius:50%;background:var(--ouro);flex:none}
+label.doc{cursor:pointer}
+label.doc input{margin:3px 0 0;width:16px;height:16px;accent-color:var(--acento);flex:none}
+label.doc.feito .doc-txt{color:var(--texto-3);text-decoration:line-through;text-decoration-color:var(--linha-forte)}
+.doc-txt{display:flex;flex-direction:column;gap:1px;min-width:0}
+.doc-txt small{font-size:11.5px;color:var(--texto-3)}
+.bloco .docs{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px 22px}
+@media (max-width:980px){.escolha{grid-template-columns:minmax(0,1fr)} .docs-painel{position:static}}
+
+/* etapas: coluna estreita à esquerda do formulário */
+.trabalho{display:grid;grid-template-columns:168px minmax(0,1fr);gap:20px;align-items:start}
+.etapas{position:sticky;top:calc(72px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:2px;background:var(--painel);border:1px solid var(--linha);border-radius:var(--raio);padding:6px}
+.etapas button{border:0;background:none;padding:6px 8px;border-radius:4px;cursor:pointer;color:var(--texto-2);display:flex;align-items:center;gap:8px;text-align:left;font-weight:500;font-size:12.5px;line-height:1.25}
+.etapas button:hover{background:var(--painel-2);color:var(--texto)}
+.etapas button.on{color:var(--marinho);background:var(--acento-suave);font-weight:600;box-shadow:inset 3px 0 0 var(--ouro)}
+.etapas .n{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font:600 10px var(--f-dado);border:1.5px solid var(--linha-forte);color:var(--texto-3);flex:none}
+.etapas button.on .n{border-color:var(--acento);color:var(--acento)}
+.etapas button.feita .n{background:var(--ok);border-color:var(--ok);color:#fff}
+.etapas .q{margin-left:auto;font:600 10px var(--f-dado);color:var(--pend);background:var(--pend-suave);border-radius:3px;padding:0 4px}
+@media (max-width:700px){.trabalho{grid-template-columns:minmax(0,1fr)} .etapas{position:static;flex-direction:row;overflow-x:auto} .etapas button{white-space:nowrap}}
+
+/* formulários */
+.painel{display:flex;flex-direction:column;gap:16px}
+.bloco{background:var(--painel);border:1px solid var(--linha);border-radius:var(--raio);padding:0;display:flex;flex-direction:column;min-width:0;box-shadow:var(--sombra)}
+.bloco > *{margin:0 18px}
+.bloco > :first-child{margin-top:16px}
+.bloco > :last-child{margin-bottom:18px}
+.bloco > * + *{margin-top:12px}
+.bloco > h3:first-child,.bloco > .bloco-topo:first-child{padding-bottom:12px;border-bottom:1px solid var(--linha);margin-left:0;margin-right:0;padding-left:18px;padding-right:18px}
+.bloco > .seg{align-self:flex-start}
+.bloco-topo{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px 14px}
+.grade .larga{grid-column:1/-1}
+.grade-end{display:grid;grid-template-columns:170px minmax(0,1fr) minmax(0,1fr) 100px;grid-template-areas:"cep logr logr num" "compl bairro cidade uf";gap:12px 14px}
+.grade-end .c-cep{grid-area:cep} .grade-end .c-logr{grid-area:logr} .grade-end .c-num{grid-area:num} .grade-end .c-compl{grid-area:compl}
+.grade-end .c-bairro{grid-area:bairro} .grade-end .c-cidade{grid-area:cidade} .grade-end .c-uf{grid-area:uf}
+@media (max-width:760px){.grade-end{grid-template-columns:minmax(0,1fr) 110px;grid-template-areas:"cep cep" "logr logr" "num compl" "bairro bairro" "cidade uf"}}
+.sub-tit{margin:4px 0 0;font:600 11.5px/1.3 var(--f-corpo);letter-spacing:.05em;text-transform:uppercase;color:var(--marinho-2)}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:500;color:var(--texto-2);min-width:0}
+label.f.req .rot::after{content:" *";color:var(--at)}
+label.f input,label.f select,label.f textarea{font-weight:400;font-size:14px;color:var(--texto);padding:7px 10px;border:1px solid var(--linha-forte);border-radius:var(--raio);background:var(--painel);width:100%;min-height:36px}
+label.f input:focus,label.f select:focus,label.f textarea:focus{border-color:var(--acento);outline:none;box-shadow:0 0 0 3px var(--acento-suave)}
+label.f textarea{min-height:76px;resize:vertical}
+label.f.dado input{font-family:var(--f-dado);font-size:13.5px}
+label.f.falta input,label.f.falta select,label.f.falta textarea{background:#fff7f0;border-color:#efcfb4}
+label.f.falta input:focus,label.f.falta select:focus{background:var(--painel)}
+label.f.erro input{border-color:var(--at);background:var(--at-suave)}
+label.f .dica{font-weight:400;font-size:11.5px;color:var(--texto-3)}
+label.f.erro .dica{color:var(--at);font-weight:500}
+label.f.atencao input{border-color:#e0a127;background:#fffaf0}
+label.f.atencao .dica{color:var(--pend)}
+label.f.info .dica{color:var(--acento)}
+.etapas .q.erro{color:#fff;background:var(--at)}
+.bloqueio{border:1px solid var(--at);border-left:4px solid var(--at);background:var(--at-suave);border-radius:var(--raio);padding:12px 14px;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+.bloqueio b{color:var(--at)}
+.bloqueio ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px}
+.link{border:0;background:none;padding:0;color:var(--at);text-decoration:underline;cursor:pointer;font:inherit;font-weight:600}
+.seg{display:inline-flex;border:1px solid var(--linha-forte);border-radius:var(--raio);overflow:hidden;background:var(--painel);flex-wrap:wrap}
+.seg button{border:0;border-right:1px solid var(--linha);background:none;padding:6px 12px;cursor:pointer;font-size:13px;color:var(--texto-2)}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--acento-suave);color:var(--acento);font-weight:600}
+.sub{border:1px solid var(--linha);background:var(--painel-2);border-radius:var(--raio);padding:12px 14px;display:flex;flex-direction:column;gap:12px}
+.poder{border:1px solid var(--linha);border-radius:var(--raio);padding:12px 14px;display:flex;flex-direction:column;gap:10px;background:var(--painel-2)}
+.poder-topo{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.poder-topo .num{font:600 13px var(--f-dado);color:var(--marinho-2);min-width:22px}
+.poder-topo input{flex:1;min-width:140px;padding:6px 9px;border:1px solid var(--linha-forte);border-radius:var(--raio);background:var(--painel);font-weight:600;text-transform:uppercase;letter-spacing:.02em}
+.mini{border:1px solid var(--linha-forte);background:var(--painel);border-radius:4px;padding:4px 9px;cursor:pointer;font-size:12.5px;color:var(--texto-2)}
+.mini:hover{color:var(--texto);border-color:var(--texto-3)}
+.biblio{display:flex;gap:6px;flex-wrap:wrap}
+.aviso{font-size:12.5px;color:var(--texto-2)}
+
+/* conferência */
+.resumo{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.resumo div{border:1px solid var(--linha);border-radius:var(--raio);padding:10px 12px;background:var(--painel-2)}
+.resumo b{display:block;font:600 22px/1.1 var(--f-dado)}
+.resumo span{font-size:12px;color:var(--texto-2)}
+.resumo .ok b{color:var(--ok)} .resumo .pend b{color:var(--pend)} .resumo .at b{color:var(--at)}
+.tabela{overflow-x:auto;border:1px solid var(--linha);border-radius:var(--raio)}
+.tabela table{border-collapse:collapse;width:100%;min-width:560px}
+.tabela th,.tabela td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--linha);vertical-align:top;font-size:13px}
+.tabela tr:last-child td{border-bottom:0}
+.tabela th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--texto-2);background:var(--painel-2);position:sticky;top:0}
+.tabela td.v{font-family:var(--f-dado);font-size:12.5px;overflow-wrap:anywhere}
+.tabela tr.sec td{background:var(--painel-2);font-weight:600;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--marinho-2)}
+.alertas{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.alertas li{border:1px solid var(--at-suave);border-left:3px solid var(--at);background:var(--at-suave);padding:8px 12px;border-radius:4px;font-size:13.5px}
+.alertas li.pend{border-color:var(--pend-suave);border-left-color:var(--pend);background:var(--pend-suave)}
+.confirmar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:12px 14px;border-radius:var(--raio);background:var(--acento-suave);border:1px solid var(--acento)}
+
+/* folha A4 */
+.mesa-folha{background:var(--mesa-folha);border-radius:var(--raio);padding:24px 16px;display:flex;justify-content:center;overflow-x:auto}
+.folha{background:#fff;color:#111;width:100%;max-width:794px;aspect-ratio:auto;padding:76px 28px 24px 38px;font:12.5px/1.45 var(--f-minuta);box-shadow:0 2px 10px rgba(0,0,0,.18);overflow-wrap:anywhere}
+.folha .tit{text-align:center;font-weight:700;text-decoration:underline;margin-bottom:16px}
+.folha .corpo{text-align:justify}
+.folha .ass{text-align:center;margin-top:24px}
+.folha mark{background:#fff2a8;color:#111}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--marinho-2);color:var(--sobre-marinho);padding:9px 16px;border-radius:var(--raio);font-size:13.5px;z-index:20;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+@media (prefers-reduced-motion:no-preference){.item,.modelo,.btn,.chip{transition:background-color .15s,border-color .15s}}
+@media (max-width:560px){.resumo{grid-template-columns:minmax(0,1fr)} .barra{position:static} .marca-txt small{display:none} .mesa-folha{padding:12px 8px} .folha{padding:32px 14px 18px 18px}}
+</style>
+
+<header class="barra">
+  <div class="marca"><span class="selo" aria-hidden="true">TN</span><span class="marca-txt"><b>Livro de Procurações</b><small>Tabeliã de Notas e de Protesto · Espírito Santo do Pinhal-SP</small></span></div>
+  <div class="barra-dir"><div class="sinc" id="estado">Conectando à biblioteca…</div><button type="button" class="mini" id="bt-sair" hidden>Sair</button></div>
+</header>
+<div class="app">
+  <aside class="arquivo" aria-label="Biblioteca">
+    <div class="arquivo-acoes"><button class="btn p" id="bt-nova" type="button">+ Nova procuração</button><button class="btn" id="bt-padroes" type="button" title="Escrevente, substabelecimento, prazo e emolumentos que entram em toda procuração nova">Valores salvos</button></div>
+    <div class="arquivo-topo"><h2>Biblioteca</h2><span class="contagem" id="contagem"></span></div>
+    <div class="busca-wrap"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="M14 14l4 4"/></svg>
+    <input class="busca" id="busca" type="search" placeholder="Nome, CPF ou CNPJ" aria-label="Buscar"></div>
+    <div class="filtros" id="filtros"></div>
+    <div class="lista" id="lista"></div>
+  </aside>
+  <main class="mesa" id="mesa"></main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>/* sem internet: usa a cópia local do servidor do cartório */ if(!window.JSZip && /^https?:$/.test(location.protocol)) document.write('<script src="/vendor/jszip.min.js"><\/script>');</script>
+<script id="nucleo">
+/* ===== Núcleo: redação da minuta, conferência e .docx (sem DOM) ===== */
+var N = (function(){
+const CIDADE = "nesta cidade e Comarca de Espírito Santo do Pinhal, Estado de São Paulo, à Rua Coronel Joaquim Vergueiro, nº 198, Centro";
+const UN = ["zero","um","dois","três","quatro","cinco","seis","sete","oito","nove","dez","onze","doze","treze","quatorze","quinze","dezesseis","dezessete","dezoito","dezenove"];
+const DZ = ["","","vinte","trinta","quarenta","cinquenta","sessenta","setenta","oitenta","noventa"];
+const CT = ["","cento","duzentos","trezentos","quatrocentos","quinhentos","seiscentos","setecentos","oitocentos","novecentos"];
+const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+function ate999(n){
+  if(n<20) return UN[n];
+  if(n<100) return DZ[Math.floor(n/10)] + (n%10 ? " e " + UN[n%10] : "");
+  if(n===100) return "cem";
+  return CT[Math.floor(n/100)] + (n%100 ? " e " + ate999(n%100) : "");
+}
+function extenso(n){
+  if(n<1000) return ate999(n);
+  const m = Math.floor(n/1000), r = n%1000;
+  const mil = (m===1 ? "" : ate999(m) + " ") + "mil";
+  if(!r) return mil;
+  return mil + ((r<100 || r%100===0) ? " e " : " ") + ate999(r);
+}
+const pad = n => String(n).padStart(2,"0");
+function parseData(s){ const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(s||""); return m ? {a:+m[1],m:+m[2],d:+m[3]} : null; }
+function dataBR(s){ const d=parseData(s); return d ? pad(d.d)+"/"+pad(d.m)+"/"+d.a : ""; }
+function anoPonto(a){ const s=String(a); return s.length>3 ? s.slice(0,-3)+"."+s.slice(-3) : s; }
+// "aos vinte e dois (22) dias do mês de setembro (09) do ano de dois mil e vinte e seis (2.026)"
+function dataExtensoSeg(s){
+  const d=parseData(s); if(!d) return null;
+  const dia = d.d===1 ? [["ao primeiro "],["(01)",1],[" dia do mês de "]] : [["aos "+extenso(d.d)+" "],["("+pad(d.d)+")",1],[" dias do mês de "]];
+  return dia.concat([[MESES[d.m-1]+" "],["("+pad(d.m)+")",1],[" do ano de "+extenso(d.a)+" "],["("+anoPonto(d.a)+")",1]]);
+}
+const so = s => String(s||"").replace(/\D/g,"");
+function cpfOk(v){ const c=so(v); if(c.length!==11||/^(\d)\1+$/.test(c)) return false;
+  for(let t=9;t<11;t++){ let s=0; for(let i=0;i<t;i++) s+= +c[i]*(t+1-i); if(((s*10)%11)%10 !== +c[t]) return false; } return true; }
+function cnpjOk(v){ const c=so(v); if(c.length!==14||/^(\d)\1+$/.test(c)) return false;
+  const calc=l=>{ let s=0,p=l-7; for(let i=0;i<l;i++){ s+= +c[i]*p--; if(p<2) p=9; } const r=s%11; return r<2?0:11-r; };
+  return calc(12)===+c[12] && calc(13)===+c[13]; }
+function fmtCPF(v){ const c=so(v).slice(0,11); return c.replace(/^(\d{3})(\d)/,"$1.$2").replace(/^(\d{3})\.(\d{3})(\d)/,"$1.$2.$3").replace(/\.(\d{3})(\d)/,".$1-$2"); }
+function fmtCNPJ(v){ const c=so(v).slice(0,14); return c.replace(/^(\d{2})(\d)/,"$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/,"$1.$2.$3").replace(/\.(\d{3})(\d)/,".$1/$2").replace(/(\d{4})(\d)/,"$1-$2"); }
+function fmtCEP(v){ const c=so(v).slice(0,8); return c.replace(/^(\d{5})(\d)/,"$1-$2"); }
+function idade(nasc, ref){ const a=parseData(nasc), b=parseData(ref); if(!a||!b) return null;
+  let i=b.a-a.a; if(b.m<a.m || (b.m===a.m && b.d<a.d)) i--; return i; }
+const norm = s => String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/\s+/g," ").trim().toUpperCase();
+const vazio = v => v===undefined || v===null || String(v).trim()==="";
+
+/* ----- modelos de dados ----- */
+function novoEnd(){ return {logr:"",num:"",compl:"",bairro:"",cidade:"",uf:""}; }
+// procurações antigas não têm o endereço separado: completa a estrutura sem apagar o texto antigo (end/sede)
+function normalizar(a){
+  const pf = p => { if(p && !p.endr) p.endr = novoEnd(); };
+  const parte = o => { pf(o.pf); if(o.pj){ if(!o.pj.endr) o.pj.endr = novoEnd(); (o.pj.reps||[]).forEach(pf); } };
+  (a.outorgantes||[]).forEach(parte); (a.outorgados||[]).forEach(parte);
+  return a;
+}
+const UFS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
+// "Rua X, nº 65, apto 2, Centro, Cidade-UF" — vazio quando nada foi preenchido
+function enderecoTexto(e, antigo){
+  e = e || {};
+  if(vazio(e.logr) && vazio(e.num) && vazio(e.bairro) && vazio(e.cidade)) return vazio(antigo) ? "" : String(antigo).trim();
+  const num = vazio(e.num) ? "" : (/^s\/?n/i.test(e.num.trim()) ? "s/nº" : "nº "+e.num.trim());
+  return [e.logr, num, e.compl, e.bairro].map(x=>String(x||"").trim()).filter(Boolean).join(", ") + (vazio(e.cidade) ? "" : ", "+e.cidade.trim()+(vazio(e.uf)?"":"-"+e.uf.trim()));
+}
+function novaPF(extra){ return Object.assign({nome:"",sexo:"",nac:"",prof:"",docTipo:"",docNum:"",docOrg:"",docUF:"",cnhRg:"",docOutro:"",docValidade:"",cpf:"",nasc:"",
+  ec:"",certTipo:"inteiro teor",certData:"",certMat:"",conjNome:"",regime:"",casData:"",pacto:"",ue:"",ueNome:"",nomeCert:"",end:"",cep:"",endr:novoEnd(),email:"",tel:"",cargo:"",assin:"normal"}, extra||{}); }
+function novaPJ(){ return {razao:"",cnpj:"",nire:"",sede:"",cep:"",endr:novoEnd(),atoConst:"",ultAlt:"",certSimpl:"",clausula:"",adm:"isolada",reps:[novaPF({cargo:"sócio administrador"})]}; }
+function novaParte(tp, extra){ return {tp:tp, pf:novaPF(extra), pj:novaPJ()}; }
+
+const REGIMES = ["comunhão parcial de bens","comunhão universal de bens","separação convencional de bens","separação obrigatória de bens","participação final nos aquestos"];
+const CARGOS_ESC = ["Substituta","Substituto","Escrevente Autorizada","Escrevente Autorizado","Escrevente"];
+
+/* ----- concordância ----- */
+// grupo de pessoas: g = "M"|"F"; pl = plural
+function grupo(lista){ const pl=lista.length>1; const g = lista.length && lista.every(x=>x==="F") ? "F" : "M"; return {g, pl}; }
+function W(gr, ms, fs, mp, fp){ return gr.pl ? (gr.g==="F"?fp:mp) : (gr.g==="F"?fs:ms); }
+function sx(p){ return p.sexo==="M" ? "M" : (p.sexo==="F" ? "F" : "M"); }
+const g1 = (p, m, f) => p.sexo==="F" ? f : (p.sexo==="M" ? m : m.replace(/o$/,"o(a)"));
+function genNac(p){ const n=(p.nac||"").trim(); const low=n.toLowerCase();
+  if(low==="brasileiro"||low==="brasileira") return p.sexo==="F" ? "brasileira" : (p.sexo==="M" ? "brasileiro" : n); return n; }
+
+/* ----- biblioteca de poderes ----- */
+// cada texto recebe c (contexto de concordância) e v (variáveis) e devolve segmentos [[texto,negrito?]]
+const PODERES = {
+  reparticoes:{nome:"Repartições públicas", titulo:"REPARTIÇÕES PÚBLICAS", vars:[],
+    txt:(c)=>[["representá-"+c.L+" perante as repartições públicas federais, estaduais, municipais, autárquicas, Prefeitura Municipal, Detran, Ciretran, Delegacias de Polícia e de Trânsito, Justiça Trabalhista; JUNTA COMERCIAL DO ESTADO DE SÃO PAULO – JUCESP, PROCON e ACIRP, INSS - Instituto Nacional do Seguro Social, RECEITA FEDERAL DO BRASIL, Consulados, empresas aéreas, empresas de telefonia, Secretaria da Receita Federal, e outras, nelas requerer, pagar, alegar e assinar o que mister for; assumir compromissos e obrigações; fazer acordos ou composições: prestar informações e declarações de residência e rendimentos;"]]},
+  banco:{nome:"Banco (conta específica)", titulo:"BANCO", vars:[{n:"banco",l:"Banco",ph:"BANCO DO BRASIL S/A",req:1},{n:"agencia",l:"Agência",req:1},{n:"conta",l:"Conta nº",req:1}],
+    txt:(c,v,P)=>[["representá-"+c.L+" perante o "],P(v.banco,"nome do banco"),[", agência "],P(v.agencia,"agência"),[", com a finalidade de movimentar a conta sob o nº "],P(v.conta,"número da conta"),
+      [", podendo emitir e endossar cheques: autorizar débitos e créditos; reconhecer saldos e solicitar extratos, efetuar depósitos e retiradas; requisitar e retirar talões de cheques; tomar saques; cadastrar senhas (sejam de cartões de débitos ou de créditos, inclusive assinatura eletrônica); emitir e receber ordens e contraordens de pagamento; promover empréstimos bancários; fazer recadastramentos e aplicações em Bancos e Instituições Financeiras; assinar toda a documentação da praxe bancária; receber tudo quando qualquer título "+c.LHE+" seja devido e dar quitação, perante qualquer pessoa física ou jurídica; fazer e assinar a Declaração do Imposto de Renda, receber notificação e cheque de restituição, se for o caso; retirar qualquer correspondência "+c.DA+", com ou sem valor, inclusive vales postais e encomendas; receber toda e qualquer importância "+c.AO+" destinada, oriundo de qualquer pagamento efetuado pela Previdência Social: podendo receber, dar recibo e quitação: concordar ou não com descontos; apresentar provas e exibir documentos; assinar guias, requerimentos, papeis, livros e folhas próprios, proceder a retirada de carnês e cartão magnético, cadastrar senhas: inclusive recadastramento necessário, requerer benefícios interpor recursos; resgatar, aplicar, reaplicar, transferir e movimentar investimentos, aplicações financeiras, LCA, CDB, fundos de investimento e demais produtos financeiros de titularidade "+c.DA+";"]]},
+  advogado:{nome:"Constituir advogado", titulo:"CONSTITUIR ADVOGADO", vars:[],
+    txt:(c)=>[[(c.pPl?"Poderão":"Poderá")+" ainda, "+c.REF+", constituir advogados com os poderes da cláusula \"Ad-Judicia\" e \"Ad-judicia et-extra\" para o foro, em qualquer juízo, Instância ou Tribunal, inclusive na justiça do Trabalho, na defesa dos interesses "+c.DA+", podendo propor contra quem de direito as ações competentes e defendê-"+c.L+" nas contrárias, seguindo umas e outras até final decisão e usando os poderes especiais para transigir, recorrer, alegar, firmar compromissos ou acordos; representar em audiências;"]]},
+  inss:{nome:"INSS", titulo:"INSS", vars:[{n:"nb",l:"Nº do benefício (NB) — opcional"}],
+    txt:(c,v)=>[["representá-"+c.L+" junto ao INSTITUTO NACIONAL DO SEGURO SOCIAL – INSS, requerer e receber toda e qualquer importância relativa ao benefício "+c.DELA+(vazio(v.nb)?"":", NB nº "+v.nb)+"; podendo para tanto, "+c.PROC+" receber toda e qualquer quantia em dinheiro, cheques ou ordens de pagamentos; passar recibos e dar quitação; retirar cartões cadastrar senhas; prestar declarações; apresentar, juntar e desentranhar documentos; assinar papéis, documentos e requerimentos; interpor recursos administrativos; proceder o necessário recadastramento anual "+c.DA+" junto ao INSS;"]]},
+  veiculo_generico:{nome:"Veículo (transferência, genérico)", titulo:"VEÍCULO", vars:[],
+    txt:(c)=>[["Poderes para assinar por "+c.ELA+" o recibo de transferência de propriedade de veículo; podendo para tanto, "+c.PROC+" representá-"+c.L+" junto ao DEPARTAMENTO ESTADUAL DE TRÂNSITO – DETRAN; representá-"+c.L+" também junto a inspeção veicular, CIRETRAN, Delegacia de Polícia local ou onde for devido, Tabelionato de Notas, requerendo e assinando o que se fizer necessário; apresentar documentos, prestar declarações, assumir responsabilidade, assinar papéis, documentos e requerimentos;"]]},
+  veiculo:{nome:"Veículo identificado (venda)", titulo:"VEÍCULO", veic:1, vars:[{n:"marca",l:"Marca/modelo",req:1},{n:"ano",l:"Ano fabricação/modelo",ph:"2019/2020",req:1},{n:"cor",l:"Cor"},{n:"placa",l:"Placa",req:1},{n:"renavam",l:"RENAVAM",req:1},{n:"chassi",l:"Chassi",req:1}],
+    txt:(c,v,P)=>[["vender, ceder e transferir, a quem convier e pelo preço e condições que ajustar, o veículo marca/modelo "],P(v.marca,"marca/modelo do veículo"),[", ano de fabricação/modelo "],P(v.ano,"ano fabricação/modelo"),
+      (vazio(v.cor)?[""]:[", cor "+v.cor]),[", placa "],P(v.placa,"placa"),[", RENAVAM "],P(v.renavam,"RENAVAM"),[", chassi "],P(v.chassi,"chassi"),
+      [", de propriedade "+c.DA+"; podendo para tanto, "+c.PROC+" assinar por "+c.ELA+" o recibo de transferência de propriedade de veículo (CRV/ATPV-e), receber preço, dar e receber quitação; representá-"+c.L+" junto ao DEPARTAMENTO ESTADUAL DE TRÂNSITO – DETRAN, CIRETRAN, inspeção veicular, Delegacia de Polícia local ou onde for devido, Tabelionato de Notas, requerendo e assinando o que se fizer necessário; requerer segunda via de documentos, licenciar, pagar taxas, multas e impostos, inclusive IPVA; apresentar documentos, prestar declarações, assumir responsabilidade, assinar papéis, documentos e requerimentos;"]]},
+  imovel_venda:{nome:"Venda de imóvel", titulo:"VENDA DE IMÓVEL", imovel:1,
+    vars:[{n:"descricao",l:"Descrição do imóvel",ta:1,req:1},{n:"matricula",l:"Matrícula nº",req:1},{n:"cri",l:"Cartório de Registro de Imóveis",ph:"Oficial de Registro de Imóveis da Comarca de …",req:1},{n:"valor",l:"Valor (opcional)",ph:"R$ …"},{n:"condicoes",l:"Condições de pagamento (opcional)"},{n:"comprador",l:"Comprador (opcional)"}],
+    txt:(c,v,P)=>[["poderes expressos e especiais para vender, prometer vender, compromissar, ceder e transferir, "+(vazio(v.comprador)?"a quem convier":"a "+v.comprador)+", o imóvel assim descrito: "],P(v.descricao,"descrição do imóvel"),
+      [", objeto da matrícula nº "],P(v.matricula,"matrícula do imóvel"),[" do "],P(v.cri,"Cartório de Registro de Imóveis"),
+      [", "+(vazio(v.valor)?"pelo preço":"pelo preço de "+v.valor)+(vazio(v.condicoes)?" e condições que ajustar":", nas seguintes condições: "+v.condicoes)+"; podendo para tanto, "+c.PROC+" assinar compromissos e escrituras públicas de venda e compra, inclusive de re-ratificação, receber sinal e preço, dar e receber quitação, transmitir posse, domínio, direitos e ação, responder pela evicção de direito, descrever e caracterizar o imóvel, apresentar e assinar declarações, inclusive a Declaração sobre Operações Imobiliárias – DOI, recolher impostos e taxas, inclusive o ITBI e laudêmio, se houver, requerer certidões, representá-"+c.L+" perante a Prefeitura Municipal, o Oficial de Registro de Imóveis competente, a Secretaria da Receita Federal do Brasil, o INCRA, se rural, e quaisquer repartições públicas, requerer averbações, registros e cancelamentos, e assinar o que for necessário;"]]},
+  adjudicia:{nome:"Ad judicia et extra (advogado)", titulo:"AD JUDICIA ET EXTRA", vars:[{n:"finalidade",l:"Finalidade específica (opcional)",ph:"especialmente para propor ação de …"}],
+    txt:(c,v,P,f)=>[["os poderes da cláusula ad judicia et extra para o foro em geral, em qualquer juízo, instância ou tribunal"+(vazio(v.finalidade)?"":", "+v.finalidade)+", podendo propor contra quem de direito as ações competentes e defendê-"+c.L+" nas contrárias, seguindo umas e outras até final decisão, usando os recursos legais e acompanhando-os, conferindo-"+(c.pPl?"lhes":"lhe")+" ainda poderes especiais para confessar, reconhecer a procedência do pedido, transigir, desistir, renunciar ao direito sobre o qual se funda a ação, receber, dar quitação, firmar compromisso e assinar declaração de hipossuficiência econômica"+(f.citacao?", bem como receber citação":"")+";"]]},
+  empresarial:{nome:"Administração empresarial", titulo:"ADMINISTRAÇÃO EMPRESARIAL", vars:[],
+    txt:(c)=>[["representá-"+c.L+" perante a JUNTA COMERCIAL DO ESTADO DE SÃO PAULO – JUCESP, Secretaria da Receita Federal do Brasil, Secretaria da Fazenda do Estado, Prefeitura Municipal, Caixa Econômica Federal, inclusive para fins de FGTS, Ministério do Trabalho e Emprego, sindicatos, fornecedores, clientes e quaisquer pessoas físicas ou jurídicas de direito público ou privado, podendo assinar requerimentos, declarações, guias e documentos fiscais e trabalhistas; contratar e demitir empregados, assinar carteiras de trabalho e documentos rescisórios; firmar contratos de compra de mercadorias e de prestação de serviços, emitir notas fiscais e duplicatas; receber e dar quitação; cadastrar e utilizar certificados digitais e senhas de acesso a sistemas governamentais;"]]},
+  saude:{nome:"Saúde (convênios e hospitais)", titulo:"SAÚDE", vars:[],
+    txt:(c)=>[["representá-"+c.L+" perante convênios médicos, hospitais, postos de saúde, clínicas, laboratórios, podendo para tanto preencher fichas de triagem, internação e demais atos necessários; requerer, assinar e retirar guias de autorização, procedimentos, exames, internações, cirurgias e tratamentos de saúde; Assinar contratos, aditivos, cancelar, suspender ou solicitar cancelamento de plano de saúde, bem como assinar declarações de saúde; Solicitar prontuários médicos, relatórios, notas fiscais, extratos de utilização e documentos cadastrais;"]]},
+  farmacia:{nome:"Farmácia Popular", titulo:"FARMÁCIA POPULAR", vars:[],
+    txt:(c)=>[["representá-"+c.L+" perante quaisquer estabelecimentos credenciados no programa \"FARMÁCIA POPULAR DO BRASIL\" do governo federal; podendo efetuar cadastros, apresentar documentos, prestar declarações, apresentar provas; retirar medicamentos prescritos e demais produtos; pagar os valores devidos, requerendo os descontos ou abatimentos do programa;"]]},
+  livre:{nome:"Cláusula livre", titulo:"", vars:[{n:"texto",l:"Texto da cláusula",ta:1,req:1}],
+    txt:(c,v,P)=>[P(v.texto,"texto da cláusula livre")]}
+};
+
+const MODELOS = [
+  {id:"amplos_pf", nome:"Amplos e gerais", sub:"Pessoa física → pessoa física", tipo:"Amplos e gerais", ot:"PF", od:"PF", intro:"amplos", poderes:["reparticoes","banco","advogado","inss","veiculo_generico","saude","farmacia"]},
+  {id:"amplos_pj", nome:"Amplos e gerais", sub:"Empresa (CNPJ) → pessoa física", tipo:"Amplos e gerais", ot:"PJ", od:"PF", intro:"amplos", poderes:["reparticoes","banco","empresarial","advogado"]},
+  {id:"imovel_pf", nome:"Venda de imóvel", sub:"Pessoa física", tipo:"Venda de imóvel", ot:"PF", od:"PF", intro:"especiais", poderes:["imovel_venda"]},
+  {id:"imovel_pj", nome:"Venda de imóvel", sub:"Empresa (CNPJ)", tipo:"Venda de imóvel", ot:"PJ", od:"PF", intro:"especiais", poderes:["imovel_venda"]},
+  {id:"veiculo_pf", nome:"Veículo", sub:"Pessoa física", tipo:"Veículo", ot:"PF", od:"PF", intro:"especiais", poderes:["veiculo"]},
+  {id:"veiculo_pj", nome:"Veículo", sub:"Empresa (CNPJ)", tipo:"Veículo", ot:"PJ", od:"PF", intro:"especiais", poderes:["veiculo"]},
+  {id:"inss", nome:"INSS", sub:"Benefício previdenciário", tipo:"INSS", ot:"PF", od:"PF", intro:"especiais", poderes:["inss"]},
+  {id:"bancaria_pf", nome:"Bancária", sub:"Pessoa física", tipo:"Bancária", ot:"PF", od:"PF", intro:"especiais", poderes:["banco"]},
+  {id:"bancaria_pj", nome:"Bancária", sub:"Empresa (CNPJ)", tipo:"Bancária", ot:"PJ", od:"PF", intro:"especiais", poderes:["banco"]},
+  {id:"adjudicia", nome:"Ad judicia", sub:"Para advogado (OAB)", tipo:"Ad judicia", ot:"PF", od:"PF", odDoc:"OAB", intro:"especiais", poderes:["adjudicia"]},
+  {id:"empresarial", nome:"Empresarial", sub:"Empresa (CNPJ) → gestor", tipo:"Empresarial", ot:"PJ", od:"PF", intro:"amplos", poderes:["empresarial","reparticoes","banco"]},
+  {id:"branco", nome:"Em branco", sub:"Monte do zero", tipo:"Outro", ot:"PF", od:"PF", intro:"amplos", poderes:[]}
+];
+
+function novoAto(modeloId){
+  const m = MODELOS.find(x=>x.id===modeloId) || MODELOS[MODELOS.length-1];
+  return {
+    modelo:m.id, tipo:m.tipo, status:"rascunho",
+    ato:{data:"", escNome:"", escCargo:""},
+    outorgantes:[novaParte(m.ot)], outorgados:[novaParte(m.od, m.odDoc?{docTipo:m.odDoc}:null)], atuacao:"",
+    intro:m.intro, poderes:m.poderes.map(k=>({k, titulo:PODERES[k].titulo, v:{}})),
+    flags:{causaPropria:false, irrevogavel:false, citacao:false},
+    substab:"", prazo:"", prazoTexto:"",
+    cnib:{resultado:"", hash:""},
+    emol:{tab:"",est:"",sef:"",mun:"",mp:"",rc:"",tj:"",sc:"",total:""}, selo:"",
+    rogo:{nome:"", qualif:"", t1:"", t2:""},
+    fichaOk:false
+  };
+}
+
+
+
+/* ----- verificação dos documentos ----- */
+// Cada verificador devolve null (ok), {erro} (bloqueia a minuta) ou {aviso} (só alerta).
+function cnhOk(v){ const c=so(v); if(c.length!==11||/^(\d)\1+$/.test(c)) return false;
+  let s=0; for(let i=0,j=9;i<9;i++,j--) s+= +c[i]*j; let dsc=0, d1=s%11; if(d1>=10){ d1=0; dsc=2; }
+  s=0; for(let i=0,j=1;i<9;i++,j++) s+= +c[i]*j; const x=s%11; const d2 = x>=10 ? 0 : x-dsc;
+  return String(d1)+String(d2)===c.slice(9); }
+function renavamOk(v){ let c=so(v); if(c.length===9) c="00"+c; if(c.length!==11||/^(\d)\1+$/.test(c)) return false;
+  const base=c.slice(0,10).split("").reverse(), pesos=[2,3,4,5,6,7,8,9,2,3];
+  let s=0; base.forEach((d,i)=>s+= +d*pesos[i]); let dv=11-(s%11); if(dv>=10) dv=0; return dv=== +c[10]; }
+const qtd = (d, n) => d.length+" número"+(d.length===1?"":"s")+" (deveria ter "+n+")";
+const VAL = {
+  cpf(v){ const d=so(v); if(d.length!==11) return {erro:"CPF incompleto ou com números a mais: "+qtd(d,11)};
+    if(!cpfOk(v)) return {erro:"CPF inválido: o dígito verificador não confere"}; return null; },
+  cnpj(v){ const d=so(v); if(d.length!==14) return {erro:"CNPJ incompleto ou com números a mais: "+qtd(d,14)};
+    if(!cnpjOk(v)) return {erro:"CNPJ inválido: o dígito verificador não confere"}; return null; },
+  cep(v){ const d=so(v); return d.length!==8 ? {erro:"CEP deve ter 8 números: "+qtd(d,8)} : null; },
+  cnh(v){ const d=so(v); if(/[^\d\s.\-]/.test(v)) return {erro:"Registro da CNH só tem números"};
+    if(d.length!==11) return {erro:"Registro da CNH deve ter 11 números: "+qtd(d,11)};
+    return cnhOk(v) ? null : {erro:"Registro da CNH inválido: o dígito verificador não confere"}; },
+  rg(v, uf){ const t=String(v).replace(/[\s.\-\/]/g,"").toUpperCase();
+    if(!/^\d+X?$/.test(t)) return {erro:"RG com caracteres inválidos (use só números; o dígito final pode ser X)"};
+    if(t.length<5) return {erro:"RG curto demais ("+t.length+" caracteres)"};
+    if(t.length>14) return {erro:"RG longo demais ("+t.length+" caracteres)"};
+    if(uf==="SP" && (t.length<7 || t.length>9)) return {aviso:"RG de SP costuma ter de 7 a 9 caracteres com o dígito; confira"};
+    return null; },
+  rgCnh(v){ const t=String(v).toUpperCase().split(/[-\/]/)[0].replace(/[\s.]/g,"");
+    if(!/^\d+X?$/.test(t) || t.length<5 || t.length>14) return {aviso:"Confira o RG que consta na CNH (ex.: 12345678-SSP/SP)"}; return null; },
+  oab(v){ const d=so(v); if(!d || d.length>7 || /[^\d\s.\-]/.test(v.replace(/[A-Za-z]$/,""))) return {erro:"Número da OAB deve ter até 7 números"}; return null; },
+  pass(v){ return /^[A-Z0-9]{6,9}$/i.test(String(v).replace(/\s/g,"")) ? null : {aviso:"Passaporte costuma ter de 6 a 9 letras e números; confira"}; },
+  placa(v){ const t=String(v).toUpperCase().replace(/[\s\-]/g,"");
+    if(!/^[A-Z]{3}\d[A-Z0-9]\d{2}$/.test(t)) return {erro:"Placa inválida: use ABC1234 (antiga) ou ABC1D23 (Mercosul) — "+t.length+" caracteres"}; return null; },
+  renavam(v){ const d=so(v); if(/[^\d\s.\-]/.test(v)) return {erro:"RENAVAM só tem números"};
+    if(d.length!==11 && d.length!==9) return {erro:"RENAVAM deve ter 11 números: "+qtd(d,11)};
+    return renavamOk(v) ? null : {erro:"RENAVAM inválido: o dígito verificador não confere"}; },
+  chassi(v){ const t=String(v).toUpperCase().replace(/[\s\-]/g,"");
+    if(t.length!==17) return {erro:"Chassi deve ter 17 caracteres: tem "+t.length};
+    if(/[IOQ]/.test(t)) return {erro:"Chassi não usa as letras I, O ou Q; confira (pode ser 1 ou 0)"};
+    if(!/^[A-Z0-9]{17}$/.test(t)) return {erro:"Chassi só tem letras e números"}; return null; },
+  agencia(v){ const t=String(v).trim(); const m=/^(\d{1,5})(?:[\s\-]?([0-9Xx]))?$/.exec(t.replace(/\./g,""));
+    if(!m) return {erro:"Agência deve ter só números, com o dígito opcional (ex.: 1234-5)"};
+    if(m[1].length!==4) return {erro:"Agência deve ter 4 números antes do dígito: tem "+m[1].length}; return null; },
+  conta(v){ const t=String(v).trim().replace(/\./g,""); const m=/^(\d+)(?:[\s\-]?([0-9Xx]))?$/.exec(t);
+    if(!m) return {erro:"Conta deve ter só números, com o dígito (ex.: 12345-6)"};
+    const d=so(t); if(d.length<4) return {erro:"Conta curta demais: "+d.length+" números"};
+    if(d.length>14) return {erro:"Conta longa demais: "+d.length+" números"};
+    if(!/[\-\s]/.test(t)) return {aviso:"Informe o dígito da conta separado por hífen (ex.: 12345-6)"}; return null; },
+  nb(v){ const d=so(v); return d.length!==10 ? {erro:"Número do benefício (NB) deve ter 10 números: "+qtd(d,10)} : null; },
+  certMat(v){ const d=so(v); if(!d || /[A-Za-z]/.test(v)) return null; // certidões antigas usam livro/folha/termo
+    return d.length!==32 ? {aviso:"A matrícula da certidão tem 32 números: "+qtd(d,32)+". Confira (certidões antigas usam livro, folha e termo)"} : null; }
+};
+const ETAPA_DE = {outorgantes:"outorgantes", outorgados:"outorgados", poderes:"poderes"};
+// lista todos os problemas de documentos do ato, com o caminho do campo para a tela marcar
+function checarDocs(a){
+  const out=[];
+  const add=(path, rot, quem, r)=>{ if(r) out.push({path, campo:quem+" — "+rot, msg:r.erro||r.aviso, bloq:!!r.erro, etapa:ETAPA_DE[path.split(".")[0]]||"ato"}); };
+  const t=(v)=>!vazio(v);
+  const pf=(p, base, quem)=>{
+    if(t(p.cpf)) add(base+".cpf","CPF",quem,VAL.cpf(p.cpf));
+    if(t(p.docNum)){
+      const k={CNH:"cnh",RG:"rg",OAB:"oab",PASS:"pass"}[p.docTipo];
+      if(k) add(base+".docNum",{cnh:"registro da CNH",rg:"RG",oab:"OAB",pass:"passaporte"}[k],quem,VAL[k](p.docNum,p.docUF));
+    }
+    if(p.docTipo==="CNH" && t(p.cnhRg)) add(base+".cnhRg","RG da CNH",quem,VAL.rgCnh(p.cnhRg));
+    if(t(p.cep)) add(base+".cep","CEP",quem,VAL.cep(p.cep));
+    if(t(p.certMat)) add(base+".certMat","matrícula da certidão",quem,VAL.certMat(p.certMat));
+  };
+  const parte=(o, base, quem)=>{
+    if(o.tp==="PJ"){ const j=o.pj;
+      if(t(j.cnpj)) add(base+".pj.cnpj","CNPJ",quem,VAL.cnpj(j.cnpj));
+      if(t(j.cep)) add(base+".pj.cep","CEP da sede",quem,VAL.cep(j.cep));
+      (j.reps||[]).forEach((r,i)=>pf(r, base+".pj.reps."+i, "Representante"+(j.reps.length>1?" "+(i+1):"")+" de "+quem.toLowerCase()));
+    } else pf(o.pf, base+".pf", quem);
+  };
+  a.outorgantes.forEach((o,i)=>parte(o,"outorgantes."+i,"Outorgante"+(a.outorgantes.length>1?" "+(i+1):"")));
+  a.outorgados.forEach((o,i)=>parte(o,"outorgados."+i,"Outorgado"+(a.outorgados.length>1?" "+(i+1):"")));
+  a.poderes.forEach((pd,i)=>{ const v=pd.v||{}, b="poderes."+i+".v.", q=(i+1)+") "+(pd.titulo||PODERES[pd.k]&&PODERES[pd.k].nome||"poder");
+    if(pd.k==="banco"){ if(t(v.agencia)) add(b+"agencia","agência",q,VAL.agencia(v.agencia)); if(t(v.conta)) add(b+"conta","conta",q,VAL.conta(v.conta)); }
+    if(pd.k==="veiculo"){ if(t(v.placa)) add(b+"placa","placa",q,VAL.placa(v.placa)); if(t(v.renavam)) add(b+"renavam","RENAVAM",q,VAL.renavam(v.renavam)); if(t(v.chassi)) add(b+"chassi","chassi",q,VAL.chassi(v.chassi)); }
+    if(pd.k==="inss" && t(v.nb)) add(b+"nb","NB",q,VAL.nb(v.nb));
+  });
+  // o mesmo CPF/CNPJ em duas partes do ato
+  const vistos={};
+  const reg=(num, path, quem, tipo)=>{ const d=so(num); if(!d) return; (vistos[tipo+d]=vistos[tipo+d]||[]).push({path,quem}); };
+  const varrer=(lista, nome)=>lista.forEach((o,i)=>{ const q=nome+(lista.length>1?" "+(i+1):""), b=(nome==="Outorgante"?"outorgantes.":"outorgados.")+i;
+    if(o.tp==="PJ"){ reg(o.pj.cnpj, b+".pj.cnpj", q, "CNPJ"); (o.pj.reps||[]).forEach((r,j)=>reg(r.cpf, b+".pj.reps."+j+".cpf", "representante de "+q.toLowerCase(), "CPF")); }
+    else reg(o.pf.cpf, b+".pf.cpf", q, "CPF"); });
+  varrer(a.outorgantes,"Outorgante"); varrer(a.outorgados,"Outorgado");
+  Object.entries(vistos).forEach(([k,l])=>{ if(l.length<2) return;
+    const tipo=k.startsWith("CPF")?"CPF":"CNPJ";
+    l.forEach(x=>out.push({path:x.path, campo:x.quem+" — "+tipo, msg:tipo+" repetido: o mesmo número está em "+l.map(y=>y.quem).join(" e "), bloq:true, etapa:ETAPA_DE[x.path.split(".")[0]]}));
+  });
+  return out;
+}
+// todos os CPFs e CNPJs de um ato (para achar o mesmo cliente em outras procurações)
+function numerosDe(a){
+  const out=[]; const add=v=>{ const d=so(v); if(d) out.push(d); };
+  a.outorgantes.concat(a.outorgados).forEach(o=>{ if(o.tp==="PJ"){ add(o.pj.cnpj); (o.pj.reps||[]).forEach(r=>add(r.cpf)); } else add(o.pf.cpf); });
+  return out;
+}
+
+/* ----- documentos necessários para a lavratura ----- */
+// Monta a lista a partir do modelo, das partes e dos poderes do ato: muda sozinha quando o ato muda.
+const PACTO_REGIMES = ["comunhão universal de bens","separação convencional de bens","participação final nos aquestos"];
+function documentos(a){
+  const grupos = [];
+  const G = (titulo, itens) => { itens = itens.filter(Boolean); if(itens.length) grupos.push({titulo, itens}); };
+  const I = (id, txt, obs) => ({id, txt, obs:obs||""});
+  const ks = a.poderes.map(p=>p.k);
+  const temImovel = ks.includes("imovel_venda");
+  function certidao(p, pre){
+    const ec = p.ec;
+    if(ec==="solteiro") return I(pre+"cert","Certidão de nascimento (inteiro teor ou breve relato)");
+    if(ec==="casado") return I(pre+"cert","Certidão de casamento", temImovel ? "Para venda de imóvel, de preferência emitida há no máximo 90 dias." : "");
+    if(ec==="divorciado") return I(pre+"cert","Certidão de casamento com averbação do divórcio");
+    if(ec==="separado") return I(pre+"cert","Certidão de casamento com averbação da separação judicial");
+    if(ec==="viuvo") return I(pre+"cert","Certidão de casamento com averbação do óbito do cônjuge (ou certidão de óbito)");
+    return I(pre+"cert","Certidão de estado civil: nascimento (solteiro) ou casamento com as averbações (casado, divorciado, separado ou viúvo)");
+  }
+  function pessoaCompleta(p, pre){
+    return [
+      I(pre+"id","Documento de identidade original, com foto e dentro da validade (RG, CNH, RNM ou passaporte)", "Cópias não substituem o original no ato."),
+      I(pre+"cpf","CPF (se o número não constar no documento de identidade)"),
+      certidao(p, pre),
+      p.ec==="casado" && PACTO_REGIMES.includes(p.regime) ? I(pre+"pacto","Escritura de pacto antenupcial com o registro no Registro de Imóveis") : null,
+      p.ue==="sim" ? I(pre+"ue","Escritura ou declaração de união estável, se houver") : null,
+      I(pre+"end","Comprovante de endereço com CEP"),
+    ];
+  }
+  a.outorgantes.forEach((o,i)=>{
+    const q = "Outorgante"+(a.outorgantes.length>1?" "+(i+1):"");
+    if(o.tp==="PJ"){
+      G(q+" · empresa (CNPJ)", [
+        I("ot"+i+"-cs","Contrato social e última alteração contratual consolidada (ou estatuto e ata de eleição da diretoria, se for S/A)"),
+        I("ot"+i+"-jucesp","Certidão simplificada da JUCESP emitida há no máximo 30 dias"),
+        I("ot"+i+"-cnpj","Cartão CNPJ"),
+        o.pj.adm==="conjunta" ? I("ot"+i+"-conj","Presença de todos os administradores exigidos pelo contrato social") : null,
+        temImovel ? I("ot"+i+"-delib","Ata ou deliberação dos sócios autorizando a venda, se o contrato social exigir") : null,
+      ]);
+      o.pj.reps.forEach((r,j)=>G(q+" · representante"+(o.pj.reps.length>1?" "+(j+1):"")+(r.nome?" ("+r.nome+")":""), pessoaCompleta(r,"ot"+i+"r"+j+"-")));
+    } else {
+      const p=o.pf;
+      G(q+(p.nome?" · "+p.nome:"")+" · comparece ao cartório", pessoaCompleta(p,"ot"+i+"-"));
+      if(temImovel && p.ec==="casado" && p.regime!=="separação convencional de bens")
+        G("Cônjuge de "+(p.nome||q.toLowerCase())+" · anuência na venda", [
+          I("ot"+i+"-conj-id","Documento de identidade original e CPF do cônjuge"),
+          I("ot"+i+"-conj-pres","Comparecimento do cônjuge para assinar como outorgante ou anuente","Art. 1.647, I, do Código Civil."),
+        ]);
+      if(p.assin && p.assin!=="normal")
+        G("Assinatura a rogo de "+(p.nome||q.toLowerCase()), [
+          I("ot"+i+"-rogo","Pessoa que assinará a rogo, com documento de identidade e CPF"),
+          I("ot"+i+"-test","Duas testemunhas com documento de identidade e CPF"),
+        ]);
+    }
+  });
+  a.outorgados.forEach((o,i)=>{
+    const q = "Outorgado"+(a.outorgados.length>1?" "+(i+1):"")+" · não precisa comparecer";
+    if(o.tp==="PJ") G(q, [I("od"+i+"-cnpj","Cartão CNPJ e endereço da sede (cópia)"), I("od"+i+"-cs","Contrato social, para conferir o nome empresarial")]);
+    else G(q+(o.pf.nome?" ("+o.pf.nome+")":""), [
+      o.pf.docTipo==="OAB" || ks.includes("adjudicia") ? I("od"+i+"-oab","Cópia da carteira da OAB e endereço profissional") : I("od"+i+"-id","Cópia do documento de identidade e do CPF"),
+      I("od"+i+"-dados","Nome completo, nacionalidade, profissão, estado civil e endereço com CEP"),
+    ]);
+  });
+  const esp = [];
+  if(ks.includes("banco")) esp.push(I("pd-banco","Dados da conta: banco, agência e número (cartão ou extrato)","Alguns bancos só aceitam procuração recente ou com poderes específicos; confirme com a agência."));
+  if(ks.includes("inss")) esp.push(I("pd-inss","Número do benefício (NB): carta de concessão ou extrato do INSS","O INSS costuma exigir procuração com menos de 12 meses e termo de responsabilidade assinado pelo procurador na agência; confirme antes de definir o prazo."));
+  if(temImovel){
+    esp.push(I("pd-mat","Certidão de matrícula atualizada do imóvel (até 30 dias)"));
+    esp.push(I("pd-iptu","Carnê do IPTU ou certidão de valor venal (imóvel urbano); CCIR e ITR (imóvel rural)"));
+    esp.push(I("pd-valor","Valor e condições da venda, se já combinados"));
+    esp.push(I("pd-comp","Dados do comprador, se a venda for para pessoa determinada"));
+  }
+  if(ks.includes("veiculo")) esp.push(I("pd-veic","CRV / ATPV-e ou CRLV-e do veículo, com placa, RENAVAM e chassi"));
+  if(ks.includes("adjudicia")) esp.push(I("pd-proc","Número do processo ou descrição da causa, se a procuração for para fim específico"));
+  G("Para os poderes desta procuração", esp);
+  G("Providências do cartório", [I("ct-cnib","Consulta à Central de Indisponibilidade (CNIB) no "+(a.outorgantes.some(o=>o.tp==="PJ")?"CNPJ/CPF":"CPF")+" de cada outorgante")]);
+  return grupos;
+}
+function documentosTexto(a, titulo){
+  return titulo+"\n\n"+documentos(a).filter(g=>g.titulo!=="Providências do cartório").map(g=>g.titulo.toUpperCase()+"\n"+g.itens.map(x=>"- "+x.txt+(x.obs?" ("+x.obs+")":"")).join("\n")).join("\n\n");
+}
+
+/* ----- redação ----- */
+const EMOL = [["tab","Ao Tabelião"],["est","Ao Estado"],["sef","À Secretaria da Fazenda"],["mun","Ao Município"],["mp","Ao Ministério Público"],["rc","Ao Registro Civil"],["tj","Tribunal de Justiça"],["sc","À Santa Casa"]];
+
+function montar(a){
+  const pend = []; const seg = [];
+  const add = (t,b) => { if(t) seg.push({t, b:!!b}); };
+  const P = (val, desc) => { if(vazio(val)){ pend.push(desc); return ["[PENDENTE: "+desc+"]", 0, 1]; } return [String(val).trim()]; };
+  const put = arr => arr.forEach(x => { if(Array.isArray(x)){ if(x[0]) seg.push({t:x[0], b:!!x[1], p:!!x[2]}); } });
+  const PB = (val, desc) => { const r=P(val,desc); r[1]=1; return r; };
+
+  // pessoas físicas que comparecem (outorgantes PF + representantes de PJ)
+  const presentes = [];
+  a.outorgantes.forEach(o => { if(o.tp==="PF") presentes.push(o.pf); else o.pj.reps.forEach(r=>presentes.push(r)); });
+  const gOut = grupo(a.outorgantes.map(o => o.tp==="PJ" ? "F" : sx(o.pf)));
+  const gPres = grupo(presentes.map(sx));
+  const gProc = grupo(a.outorgados.map(o => o.tp==="PJ" ? "F" : sx(o.pf)));
+  const c = {
+    L: W(gOut,"lo","la","los","las"),
+    DA: W(gOut,"do outorgante","da outorgante","dos outorgantes","das outorgantes"),
+    AO: W(gOut,"ao outorgante","à outorgante","aos outorgantes","às outorgantes"),
+    A: W(gOut,"o outorgante","a outorgante","os outorgantes","as outorgantes"),
+    DELA: W(gOut,"dele outorgante","dela outorgante","deles outorgantes","delas outorgantes"),
+    ELA: W(gOut,"ele outorgante","ela outorgante","eles outorgantes","elas outorgantes"),
+    LHE: gOut.pl ? "lhes" : "lhe",
+    PROC: W(gProc,"o nomeado procurador","a nomeada procuradora","os nomeados procuradores","as nomeadas procuradoras"),
+    REF: W(gProc,"referido procurador","referida procuradora","referidos procuradores","referidas procuradoras"),
+    pPl: gProc.pl
+  };
+  const tag = (i, lista, nome) => lista.length>1 ? nome+" "+(i+1) : nome;
+
+  function docSeg(p, quem){
+    const portador = g1(p,"portador","portadora");
+    const cpf = [["CPF/MF nº "+(vazio(p.cpf)?"":fmtCPF(p.cpf)), 1]]; if(vazio(p.cpf)){ cpf[0][0]="CPF/MF nº "; cpf.push(PB("", "CPF de "+quem)); }
+    const t = p.docTipo;
+    if(!t) return [P("", "tipo e número do documento de identidade de "+quem),[" e "]].concat(cpf);
+    const num = PB(p.docNum, "número do documento de identidade de "+quem);
+    if(t==="CNH") return [[portador+" da Carteira Nacional de Habilitação-CNH, "],["registro n° ",1],num,[", emitida pelo DETRAN-"],P(p.docUF,"UF do DETRAN emissor da CNH de "+quem),[", da qual consta o "],["Documento de Identidade nº ",1],PB(p.cnhRg,"RG constante da CNH de "+quem),[" e "]].concat(cpf);
+    if(t==="RG") return [[portador+" da "],["Cédula de Identidade RG nº ",1],num,["-",1],PB(p.docOrg,"órgão emissor do RG de "+quem),["/",1],PB(p.docUF,"UF do RG de "+quem),[" e "+g1(p,"inscrito","inscrita")+" no "]].concat(cpf);
+    if(t==="RNM") return [[portador+" do "],["Registro Nacional Migratório-RNM nº ",1],num,["-",1],PB(p.docOrg,"órgão emissor do RNM de "+quem),[" e "+g1(p,"inscrito","inscrita")+" no "]].concat(cpf);
+    if(t==="PASS") return [[portador+" do "],["Passaporte nº ",1],num,[", expedido por "],P(p.docOrg,"país/órgão emissor do passaporte de "+quem),[", e "+g1(p,"inscrito","inscrita")+" no "]].concat(cpf);
+    if(t==="OAB") return [[g1(p,"advogado","advogada")+" "+g1(p,"inscrito","inscrita")+" na "],["Ordem dos Advogados do Brasil, Seção de ",1],PB(p.docUF,"Seção (UF) da OAB de "+quem),[", sob nº ",1],num,[", e no "]].concat(cpf);
+    if(t==="OUTRO") return [[portador+" do "],PB(p.docOutro,"tipo do documento de "+quem),[" nº ",1],num,[", expedido por "],P(p.docOrg,"órgão emissor do documento de "+quem),[" e "+g1(p,"inscrito","inscrita")+" no "]].concat(cpf);
+    return [P("", "tipo e número do documento de identidade de "+quem),[" e "]].concat(cpf);
+  }
+  function ecCompleto(p, quem){
+    const ec=p.ec, sx_=x=>g1(p,x,x.replace(/o$/,"a"));
+    const cert = (desc) => [[", conforme certidão "+desc+" emitida aos "],P(dataBR(p.certData),"data de emissão da certidão de "+quem),[", matrícula nº "],P(p.certMat,"matrícula da certidão de "+quem)];
+    let r;
+    if(ec==="solteiro") r=[[", declara-se "+sx_("solteiro")]].concat(cert((p.certTipo==="breve relato"?"de breve relato":"de inteiro teor")+" de nascimento"));
+    else if(ec==="divorciado") r=[[", declara-se "+sx_("divorciado")]].concat(cert("de casamento com averbação do divórcio"));
+    else if(ec==="separado") r=[[", declara-se "+g1(p,"separado judicialmente","separada judicialmente")]].concat(cert("de casamento com averbação da separação"));
+    else if(ec==="viuvo") r=[[", declara-se "+g1(p,"viúvo","viúva")]].concat(cert("de casamento com averbação do óbito"));
+    else if(ec==="casado"){
+      r=[[", "+sx_("casado")+" com "],P(p.conjNome,"nome do cônjuge de "+quem),[", sob o regime da "],P(p.regime,"regime de bens de "+quem),[", em "],P(dataBR(p.casData),"data do casamento de "+quem)];
+      if(!vazio(p.pacto)) r.push([", conforme escritura de pacto antenupcial "+p.pacto]);
+      r.push([", conforme certidão de casamento matrícula nº "]); r.push(P(p.certMat,"matrícula da certidão de casamento de "+quem));
+      return r.concat([[","]]);
+    } else return [[", "],P("", "estado civil de "+quem),[","]];
+    if(p.ue==="sim") r=r.concat([[", e conviver em união estável com "],P(p.ueNome,"nome do(a) companheiro(a) de "+quem),[","]]);
+    else if(p.ue==="nao") r.push([", e não conviver como se "+sx_("casado")+" fosse (união estável),"]);
+    else r=r.concat([[", "],P("", "declaração sobre união estável de "+quem),[","]]);
+    return r;
+  }
+  function ecCurto(p, quem){
+    const m = {solteiro:g1(p,"solteiro","solteira"),casado:g1(p,"casado","casada"),divorciado:g1(p,"divorciado","divorciada"),viuvo:g1(p,"viúvo","viúva"),separado:g1(p,"separado judicialmente","separada judicialmente")}[p.ec];
+    return m ? [[m+", "]] : [P("", "estado civil de "+quem),[", "]];
+  }
+  // rua, número, complemento, bairro e cidade-UF separados por vírgula; o que faltar vira [PENDENTE]
+  function endPartes(e, antigo, quem){
+    e = e || {};
+    if(vazio(e.logr) && vazio(e.num) && vazio(e.bairro) && vazio(e.cidade) && !vazio(antigo)) return [[String(antigo).trim()]];
+    const r=[P(e.logr,"rua do endereço de "+quem),[", "]];
+    if(!vazio(e.num) && /^s\/?n/i.test(e.num.trim())) r.push(["s/nº"]); else { r.push(["nº "]); r.push(P(e.num,"número do endereço de "+quem)); }
+    if(!vazio(e.compl)) r.push([", "+e.compl.trim()]);
+    r.push([", "]); r.push(P(e.bairro,"bairro de "+quem));
+    r.push([", "]); r.push(P(e.cidade,"cidade de "+quem)); r.push(["-"]); r.push(P(e.uf,"UF de "+quem));
+    return r;
+  }
+  function endSeg(p, quem){
+    const r=[[" "+g1(p,"residente e domiciliado","residente e domiciliada")+" na "]].concat(endPartes(p.endr, p.end, quem)).concat([[", CEP "],P(vazio(p.cep)?"":fmtCEP(p.cep),"CEP de "+quem)]);
+    if(!vazio(p.email)) r.push([", e-mail "+p.email.trim()]);
+    if(!vazio(p.tel)) r.push([", telefone "+p.tel.trim()]);
+    return r;
+  }
+  function qualPF(p, quem, completo){
+    let r=[PB(vazio(p.nome)?"":p.nome.trim().toUpperCase(), "nome completo de "+quem),[", "],P(genNac(p),"nacionalidade de "+quem),[", "],P(p.prof,"profissão de "+quem),[", "]];
+    if(completo){ r=r.concat(docSeg(p,quem)).concat(ecCompleto(p,quem)); }
+    else { r=r.concat(ecCurto(p,quem)).concat(docSeg(p,quem)).concat([[","]]); }
+    return r.concat(endSeg(p,quem));
+  }
+  function qualPJ(pj, quem){
+    let r=[PB(vazio(pj.razao)?"":pj.razao.trim().toUpperCase(),"razão social de "+quem),[", pessoa jurídica de direito privado, inscrita no "],["CNPJ sob nº ",1],PB(vazio(pj.cnpj)?"":fmtCNPJ(pj.cnpj),"CNPJ de "+quem),
+      [", com sede na "]].concat(endPartes(pj.endr, pj.sede, "sede de "+quem)).concat([[", CEP "],P(vazio(pj.cep)?"":fmtCEP(pj.cep),"CEP da sede de "+quem)]);
+    if(!vazio(pj.nire)) r.push([", NIRE "+pj.nire.trim()]);
+    r=r.concat([[", com seu ato constitutivo "],P(pj.atoConst,"registro do ato constitutivo de "+quem),[" e última alteração contratual consolidada "],P(pj.ultAlt,"registro da última alteração consolidada de "+quem),
+      [", conforme certidão simplificada expedida pela JUCESP em "],P(dataBR(pj.certSimpl),"data da certidão simplificada de "+quem),
+      [", neste ato representada, nos termos da cláusula "],P(pj.clausula,"cláusula do contrato social que confere poderes, de "+quem),[" do seu contrato social, por "]]);
+    pj.reps.forEach((rp,i)=>{
+      const qr = "representante"+(pj.reps.length>1?" "+(i+1):"")+" de "+quem;
+      if(i) r.push(["; e por "]);
+      r.push([(rp.sexo==="F"?"sua ":"seu ")]); r.push(P(rp.cargo,"cargo do "+qr)); r.push([" "]);
+      r=r.concat(qualPF(rp, qr, true));
+    });
+    if(pj.adm==="conjunta" && pj.reps.length>1) r.push([", que assinam em conjunto, na forma do contrato social"]);
+    return r;
+  }
+
+  // título
+  const titulo = "PROCURAÇÃO PÚBLICA COMO ADIANTE SE CONTÉM E DECLARA";
+  // abertura
+  add("SAIBAM",1); add(" quantos este público instrumento de procuração bastante virem que ");
+  const dt = dataExtensoSeg(a.ato.data);
+  if(dt) put(dt); else put([P("", "data do ato")]);
+  add(", "+CIDADE+", perante mim, ");
+  put([P(a.ato.escCargo,"cargo do escrevente que lavra")]);
+  add(" da Tabeliã De Notas e De Protesto de Letras e Títulos que esta subscreve, como "+(a.outorgantes.length>1?"outorgantes compareceram":"outorgante compareceu")+": ");
+  a.outorgantes.forEach((o,i)=>{
+    const quem = tag(i,a.outorgantes,"outorgante");
+    if(i) add("; e ");
+    put(o.tp==="PJ" ? qualPJ(o.pj,quem) : qualPF(o.pf,quem,true));
+  });
+  add(". ");
+  add(W(gPres,"O presente, maior e capaz, reconhecido como o próprio","A presente, maior e capaz, reconhecida como a própria","Os presentes, maiores e capazes, reconhecidos como os próprios","As presentes, maiores e capazes, reconhecidas como as próprias")+" de que trato, tendo em vista os documentos originais ora apresentados, do que de tudo dou fé. ");
+  add("E, "+W(gOut,"pelo outorgante","pela outorgante","pelos outorgantes","pelas outorgantes")+", me foi dito que por este público instrumento de procuração e na melhor forma de direito, "+(gOut.pl?"nomeiam e constituem ":"nomeia e constitui ")+W(gProc,"seu bastante procurador","sua bastante procuradora","seus bastantes procuradores","suas bastantes procuradoras")+": ");
+  a.outorgados.forEach((o,i)=>{
+    const quem = tag(i,a.outorgados,"outorgado");
+    if(i) add("; e ");
+    put(o.tp==="PJ" ? qualPJ(o.pj,quem) : qualPF(o.pf,quem,false));
+  });
+  if(a.outorgados.length>1){
+    if(a.atuacao==="conjunto") add("; os quais deverão agir sempre em conjunto");
+    else if(a.atuacao==="isoladamente") add("; os quais poderão agir em conjunto ou isoladamente, independentemente da ordem de nomeação");
+    else { add("; "); put([P("", "forma de atuação dos procuradores (em conjunto ou isoladamente)")]); }
+  }
+  const quem_ = gProc.pl ? "a quem conferem" : "a quem confere";
+  const conf = gOut.pl ? "a quem conferem" : "a quem confere";
+  void quem_;
+  const intro = {
+    amplos: conf+" amplos e gerais poderes para gerir, administrar todos os negócios e interesses "+c.DA+"; podendo para tanto "+c.PROC+": ",
+    amplos_especiais: conf+" amplos, gerais e especiais poderes para gerir, administrar todos os negócios e interesses "+c.DA+"; podendo para tanto "+c.PROC+": ",
+    especiais: conf+" poderes especiais para, em nome "+c.DA+", praticar os atos a seguir especificados, podendo para tanto "+c.PROC+": "
+  }[a.intro] || conf+" poderes para: ";
+  add("; "+intro);
+  if(!a.poderes.length) put([P("", "poderes conferidos")," "]);
+  a.poderes.forEach((pd,i)=>{
+    const def = PODERES[pd.k]; if(!def) return;
+    add((i+1)+") ");
+    if(!vazio(pd.titulo)) add(pd.titulo.trim().toUpperCase()+":",1), add(" ");
+    put(def.txt(c, pd.v||{}, P, a.flags));
+    add(" ");
+  });
+  if(a.flags.causaPropria) add("A presente procuração é outorgada em causa própria, nos termos do artigo 685 do Código Civil, sendo irrevogável, não se extinguindo pela morte de qualquer das partes, e "+W(gProc,"ficando o procurador dispensado","ficando a procuradora dispensada","ficando os procuradores dispensados","ficando as procuradoras dispensadas")+" da prestação de contas, podendo transferir para si os bens objeto do mandato, obedecidas as formalidades legais; ");
+  else if(a.flags.irrevogavel) add("A presente procuração é outorgada em caráter irrevogável e irretratável, nos termos dos artigos 683 e 684 do Código Civil; ");
+  add("Enfim, praticar os atos necessários ao fiel desempenho deste mandato, comprometendo-se "+c.A+" a dar tudo por bom, firme e valioso; ");
+  const SUB = {VEDADO:"VEDADO SUBSTABELECIMENTO.", COM:"PERMITIDO SUBSTABELECIMENTO, COM RESERVA DE IGUAIS PODERES.", SEM:"PERMITIDO SUBSTABELECIMENTO, SEM RESERVA DE PODERES."}[a.substab];
+  if(SUB) add(SUB,1); else put([PB("", "cláusula de substabelecimento")]);
+  add(" ");
+  if(a.prazo==="INDETERMINADO") add("Prazo de Validade: INDETERMINADO.",1);
+  else if(a.prazo==="DEFINIDO"){ add("Prazo de Validade: ",1); put([PB(a.prazoTexto,"prazo de validade")]); add(".",1); }
+  else { add("Prazo de Validade: ",1); put([PB("", "prazo de validade")]); add(".",1); }
+  add(" Os elementos declaratórios, qualificações, identificações, inclusive poderes contidos no presente instrumento foram solicitados e fornecidos "+W(gOut,"pelo outorgante","pela outorgante","pelos outorgantes","pelas outorgantes")+", sendo inalteráveis após a assinatura e a emissão de traslado, responsabilizando-se assim "+c.A+" por qualquer incorreção; assim, cientifica-se que eventuais correções somente serão levadas a efeito mediante a lavratura com cobrança de novo ato. ");
+  add("DA INDISPONIBILIDADE:",1);
+  const docsCnib = a.outorgantes.map(o=>o.tp==="PJ"?"CNPJ":"CPF");
+  const tipoDoc = docsCnib.every(x=>x==="CPF") ? "CPF" : (docsCnib.every(x=>x==="CNPJ") ? "CNPJ" : "CPF/CNPJ");
+  add(" Certifico que foi realizada a consulta na central de indisponibilidade, nos termos do Provimento CG. nº 13/2012, "+(a.outorgantes.length>1?"nos "+tipoDoc+" "+c.DA:"no "+tipoDoc+" "+c.DA)+", com resultado ");
+  put([P(a.cnib.resultado,"resultado da consulta CNIB")]); add(", conforme Código hash: "); put([P(a.cnib.hash,"código hash da CNIB")]); add(". ");
+  const rogo = presentes.filter(p=>p.assin && p.assin!=="normal");
+  if(rogo.length){
+    add("Por "+(rogo.length>1?"não saberem ou não poderem":"não saber ou não poder")+" assinar, assina a rogo de "+rogo.map(p=>vazio(p.nome)?"[outorgante]":p.nome.trim().toUpperCase()).join(" e de ")+" ");
+    put([PB(a.rogo.nome,"nome de quem assina a rogo"),[", "],P(a.rogo.qualif,"qualificação de quem assina a rogo"),[", na presença das testemunhas instrumentárias "],P(a.rogo.t1,"testemunha 1 (nome e documento)"),[" e "],P(a.rogo.t2,"testemunha 2 (nome e documento)"),[". "]]);
+  }
+  add(gPres.pl ? "De como assim o disseram, dou fé, me pediram e eu lhes lavrei o presente instrumento público de procuração que, depois de lido e achado conforme, aceitam, outorgam e assinam, do que de tudo dou fé. "
+               : "De como assim o disse, dou fé, me pediu e eu lhe lavrei o presente instrumento público de procuração que, depois de lido e achado conforme, aceita, outorga e assina, do que de tudo dou fé. ");
+  add("Eu, ______________________, ");
+  put([PB(vazio(a.ato.escNome)?"":a.ato.escNome.trim().toUpperCase(),"nome do escrevente")]);
+  add(", "); put([P(a.ato.escCargo,"cargo do escrevente")]); add(" da Tabeliã, lavrei, conferi, subscrevo e assino. ");
+  // emolumentos
+  add("Emolumentos: ",1);
+  EMOL.forEach(([k,l],i)=>{ add(l+": R$ "+(vazio(a.emol[k])?"":a.emol[k].trim()),1); if(vazio(a.emol[k])) seg.push({t:"[PENDENTE]",b:true,p:true}); add(i<EMOL.length-1?" / ":" / ",1); });
+  add("Total: R$ "+(vazio(a.emol.total)?"":a.emol.total.trim()),1); if(vazio(a.emol.total)) seg.push({t:"[PENDENTE]",b:true,p:true}); add(". ",1);
+  if(EMOL.some(([k])=>vazio(a.emol[k])) || vazio(a.emol.total)) pend.push("valores dos emolumentos (R$)");
+  add("Selo Digital:",1); add(" "+(vazio(a.selo)?"______________________________________________":a.selo.trim()));
+  // assinaturas
+  const ass = [];
+  a.outorgantes.forEach(o=>{
+    if(o.tp==="PJ") o.pj.reps.forEach(r=>ass.push({nome:vazio(r.nome)?"[PENDENTE: representante]":r.nome.trim().toUpperCase(), sub:vazio(o.pj.razao)?"":"p/ "+o.pj.razao.trim().toUpperCase()}));
+    else ass.push({nome: vazio(o.pf.nome)?"[PENDENTE: outorgante]":o.pf.nome.trim().toUpperCase(), sub: o.pf.assin!=="normal" ? "(assina a rogo)" : ""});
+  });
+  if(rogo.length){ ass.push({nome: vazio(a.rogo.nome)?"[PENDENTE: assinante a rogo]":a.rogo.nome.trim().toUpperCase(), sub:"a rogo"});
+    ass.push({nome:"Testemunha", sub:a.rogo.t1||""}); ass.push({nome:"Testemunha", sub:a.rogo.t2||""}); }
+  ass.push({nome: vazio(a.ato.escNome)?"[PENDENTE: escrevente]":a.ato.escNome.trim().toUpperCase(), sub:""});
+  if(vazio(a.selo)) pend.push("Selo Digital (aposto na lavratura)");
+  return {titulo, seg, ass, pend:[...new Set(pend)]};
+}
+
+/* ----- conferência ----- */
+function conferir(a){
+  const rows=[], alertas=[];
+  const ref = a.ato.data;
+  const st = (v, ok) => vazio(v) ? "PENDENTE" : (ok===false ? "ATENÇÃO" : "OK");
+  const R = (campo, valor, status, nota) => rows.push({campo, valor: vazio(valor)?"—":String(valor), status, nota:nota||""});
+  const S = t => rows.push({sec:t});
+  const at = t => alertas.push(t);
+
+  S("Ato");
+  R("Tipo de procuração", a.tipo, st(a.tipo));
+  R("Data do ato", dataBR(ref), st(ref));
+  R("Escrevente que lavra", a.ato.escNome, st(a.ato.escNome));
+  R("Cargo do escrevente", a.ato.escCargo, st(a.ato.escCargo));
+
+  function pf(p, quem, completo, eOutorgante){
+    R(quem+" — nome", p.nome, st(p.nome));
+    R(quem+" — sexo (concordância)", {F:"feminino",M:"masculino"}[p.sexo]||"", st(p.sexo));
+    R(quem+" — nacionalidade", genNac(p), st(p.nac));
+    R(quem+" — profissão", p.prof, st(p.prof));
+    const dn = {CNH:"CNH",RG:"RG",RNM:"RNM",PASS:"Passaporte",OAB:"OAB",OUTRO:p.docOutro||"Outro"}[p.docTipo]||"";
+    R(quem+" — documento", dn ? dn+" nº "+(p.docNum||"?")+(p.docOrg?" "+p.docOrg:"")+(p.docUF?"/"+p.docUF:"") : "", vazio(p.docTipo)||vazio(p.docNum) ? "PENDENTE" : "OK");
+    if(p.docTipo==="CNH") R(quem+" — RG constante da CNH", p.cnhRg, st(p.cnhRg));
+    if(!vazio(p.docValidade)){
+      const venc = ref && p.docValidade < ref;
+      R(quem+" — validade do documento", dataBR(p.docValidade), venc?"ATENÇÃO":"OK", venc?"vencido na data do ato":"");
+      if(venc) at(quem+": documento de identidade vencido em "+dataBR(p.docValidade)+". A CNH vencida há mais de 30 dias não serve como identificação; exija documento válido.");
+    }
+    const cpfv = vazio(p.cpf) ? null : cpfOk(p.cpf);
+    R(quem+" — CPF", vazio(p.cpf)?"":fmtCPF(p.cpf), st(p.cpf, cpfv), cpfv===false?"dígito verificador inválido":"");
+    const ecn = {solteiro:"solteiro(a)",casado:"casado(a)",divorciado:"divorciado(a)",viuvo:"viúvo(a)",separado:"separado(a) judicialmente"}[p.ec]||"";
+    R(quem+" — estado civil", ecn, st(p.ec));
+    if(completo){
+      if(p.ec==="casado"){
+        R(quem+" — cônjuge", p.conjNome, st(p.conjNome));
+        R(quem+" — regime de bens", p.regime, st(p.regime));
+        R(quem+" — data do casamento", dataBR(p.casData), st(p.casData));
+        R(quem+" — matrícula da certidão", p.certMat, st(p.certMat));
+        const exigePacto = p.regime && p.regime!=="comunhão parcial de bens" && p.regime!=="separação obrigatória de bens";
+        const pos77 = p.casData && p.casData >= "1977-12-26";
+        if(exigePacto && pos77 && vazio(p.pacto)){ R(quem+" — pacto antenupcial", "", "ATENÇÃO", "regime exige pacto"); at(quem+": casamento após a Lei 6.515/77 sob "+p.regime+" exige pacto antenupcial. Informe a escritura e o registro do pacto."); }
+      } else if(p.ec){
+        R(quem+" — certidão (data de emissão)", dataBR(p.certData), st(p.certData));
+        R(quem+" — certidão (matrícula)", p.certMat, st(p.certMat));
+        R(quem+" — união estável", {sim:"convive com "+(p.ueNome||"?"),nao:"declara não conviver"}[p.ue]||"", st(p.ue));
+      }
+      if(!vazio(p.nomeCert) && norm(p.nomeCert)!==norm(p.nome)){
+        R(quem+" — nome na certidão", p.nomeCert, "ATENÇÃO", "diverge do documento de identidade");
+        at(quem+": o nome na certidão (\""+p.nomeCert+"\") diverge do nome no documento de identidade (\""+p.nome+"\"). Verifique averbação de alteração de nome antes de lavrar.");
+      }
+    }
+    const et = enderecoTexto(p.endr, p.end), e_=p.endr||{}, endOk = !vazio(e_.logr)&&!vazio(e_.num)&&!vazio(e_.bairro)&&!vazio(e_.cidade)&&!vazio(e_.uf);
+    R(quem+" — endereço", et, et ? (endOk || (vazio(e_.logr) && !vazio(p.end)) ? "OK" : "PENDENTE") : "PENDENTE", et && !endOk && !vazio(e_.logr) ? "falta rua, número, bairro, cidade ou UF" : "");
+    R(quem+" — CEP", vazio(p.cep)?"":fmtCEP(p.cep), st(p.cep, vazio(p.cep)||so(p.cep).length===8), "");
+    if(eOutorgante){
+      const id = idade(p.nasc, ref);
+      if(id!==null) R(quem+" — idade na data do ato", id+" anos", "OK");
+      if(id!==null && id>=60) at(quem+" tem "+id+" anos. Avalie a capacidade com cautela; se houver dificuldade de assinatura, providencie assinante a rogo e duas testemunhas.");
+      if(id!==null && id<18) at(quem+" tem "+id+" anos (menor). Procuração por menor exige representação ou assistência dos pais/tutor.");
+      if(p.assin==="nao_alfabetizado") at(quem+" não é alfabetizado(a): é obrigatório o assinante a rogo e duas testemunhas instrumentárias, com colheita da impressão digital.");
+      if(p.assin==="dificuldade") at(quem+" tem dificuldade para assinar: registre o assinante a rogo e duas testemunhas.");
+    }
+  }
+  function pj(o, quem){
+    const v = vazio(o.cnpj) ? null : cnpjOk(o.cnpj);
+    R(quem+" — razão social", o.razao, st(o.razao));
+    R(quem+" — CNPJ", vazio(o.cnpj)?"":fmtCNPJ(o.cnpj), st(o.cnpj, v), v===false?"dígito verificador inválido":"");
+    R(quem+" — NIRE", o.nire, vazio(o.nire)?"PENDENTE":"OK");
+    const es = enderecoTexto(o.endr, o.sede), eo=o.endr||{}, compl_ = !vazio(eo.logr)&&!vazio(eo.num)&&!vazio(eo.bairro)&&!vazio(eo.cidade)&&!vazio(eo.uf);
+    R(quem+" — sede", es, es ? (compl_ || (vazio(eo.logr) && !vazio(o.sede)) ? "OK" : "PENDENTE") : "PENDENTE");
+    R(quem+" — CEP da sede", vazio(o.cep)?"":fmtCEP(o.cep), st(o.cep, vazio(o.cep)||so(o.cep).length===8));
+    R(quem+" — ato constitutivo (JUCESP)", o.atoConst, st(o.atoConst));
+    R(quem+" — última alteração consolidada", o.ultAlt, st(o.ultAlt));
+    R(quem+" — certidão simplificada", dataBR(o.certSimpl), st(o.certSimpl));
+    if(o.certSimpl && ref){ const d1=new Date(o.certSimpl), d2=new Date(ref); const dias=(d2-d1)/864e5;
+      if(dias>30) at(quem+": a certidão simplificada da JUCESP tem mais de 30 dias ("+Math.round(dias)+"). Peça certidão atualizada."); }
+    R(quem+" — cláusula de poderes", o.clausula, vazio(o.clausula)?"ATENÇÃO":"OK", vazio(o.clausula)?"confira no contrato social":"");
+    if(vazio(o.clausula)) at(quem+": indique a cláusula do contrato social que dá ao representante poderes para outorgar procuração.");
+    R(quem+" — administração", o.adm==="conjunta"?"conjunta":"isolada", "OK");
+    if(o.adm==="conjunta" && o.reps.length<2) at(quem+": a administração é conjunta, mas só há um representante. Todos os administradores exigidos pelo contrato social devem comparecer e assinar.");
+    o.reps.forEach((r,i)=>{ const qr="Representante"+(o.reps.length>1?" "+(i+1):"")+" ("+quem+")"; R(qr+" — cargo", r.cargo, st(r.cargo)); pf(r, qr, true, true); });
+  }
+  a.outorgantes.forEach((o,i)=>{ const q="Outorgante"+(a.outorgantes.length>1?" "+(i+1):""); S(q+(o.tp==="PJ"?" (pessoa jurídica)":" (pessoa física)")); o.tp==="PJ" ? pj(o.pj,q) : pf(o.pf,q,true,true); });
+  a.outorgados.forEach((o,i)=>{ const q="Outorgado"+(a.outorgados.length>1?" "+(i+1):""); S(q+(o.tp==="PJ"?" (pessoa jurídica)":" (pessoa física)")); o.tp==="PJ" ? pj(o.pj,q) : pf(o.pf,q,false,false); });
+  if(a.outorgados.length>1){ R("Atuação dos procuradores", {conjunto:"em conjunto",isoladamente:"em conjunto ou isoladamente"}[a.atuacao]||"", st(a.atuacao)); }
+
+  S("Poderes");
+  if(!a.poderes.length) R("Poderes", "", "PENDENTE");
+  a.poderes.forEach((pd,i)=>{
+    const def=PODERES[pd.k]; if(!def) return;
+    const faltam = def.vars.filter(x=>x.req && vazio((pd.v||{})[x.n])).map(x=>x.l);
+    R((i+1)+") "+(pd.titulo||def.nome), faltam.length?"faltam: "+faltam.join(", "):"completo", faltam.length?(def.veic||def.imovel?"ATENÇÃO":"PENDENTE"):"OK");
+    if(def.veic && faltam.length) at("Veículo: faltam "+faltam.join(", ")+". Placa, RENAVAM, chassi, marca/modelo e ano devem constar exatamente como no CRV/CRLV.");
+    if(def.imovel){
+      at("Venda de imóvel: exige poderes expressos e especiais (art. 661, §1º, CC), com descrição do imóvel, matrícula e Cartório de Registro de Imóveis"+(faltam.length?" — faltam: "+faltam.join(", "):"")+".");
+      const casados=[]; a.outorgantes.forEach(o=>{ const ps=o.tp==="PF"?[o.pf]:[]; ps.forEach(p=>{ if(p.ec==="casado") casados.push(p); if(p.ue==="sim") at((p.nome||"Outorgante")+" declara união estável: avalie a anuência do(a) companheiro(a) (art. 1.725 c/c 1.647, I, CC; STJ)."); }); });
+      if(a.outorgantes.some(o=>o.tp==="PJ")) at("Imóvel de pessoa jurídica: confira se o contrato social autoriza o administrador a alienar imóveis ou se exige deliberação dos sócios (art. 1.015 CC); exija a certidão simplificada atualizada.");
+      casados.forEach(p=>{ if(p.regime!=="separação convencional de bens") at((p.nome||"Outorgante")+" é casado(a) sob "+(p.regime||"regime não informado")+": a alienação de imóvel exige a outorga do cônjuge (art. 1.647, I, CC). O cônjuge deve comparecer como outorgante ou anuente."+(p.regime==="participação final nos aquestos"?" Verifique se o pacto dispensa a outorga (art. 1.656 CC).":"")); });
+    }
+  });
+  if(a.flags.causaPropria) at("Procuração em causa própria (art. 685 CC): é irrevogável, não se extingue pela morte das partes e dispensa prestação de contas; equivale, na prática, à transmissão do direito. Exige preço e objeto determinados e o recolhimento do imposto de transmissão quando for o caso.");
+  if(a.flags.irrevogavel && !a.flags.causaPropria) at("Cláusula de irrevogabilidade (arts. 683 e 684 CC): a revogação gera perdas e danos e, se a cláusula for condição de negócio bilateral, a revogação é ineficaz. Confirme que o outorgante compreende o efeito.");
+  if(a.flags.citacao) at("Poder para receber citação: a citação feita ao procurador vale como citação pessoal do outorgante (art. 242 CPC). Advirta o outorgante.");
+
+  const probs = checarDocs(a);
+  if(probs.length){
+    S("Verificação dos documentos");
+    probs.forEach(x=>R(x.campo, x.msg, "ATENÇÃO", x.bloq?"impede gerar a minuta":"confira"));
+    const nb = probs.filter(x=>x.bloq).length;
+    if(nb) at("Há "+nb+" erro(s) em documentos (CPF, CNPJ, RG, CNH, placa, RENAVAM, chassi, banco, NB ou CEP). A minuta só pode ser gerada depois da correção.");
+  }
+  S("Encerramento");
+  R("Substabelecimento", {VEDADO:"vedado",COM:"permitido com reserva",SEM:"permitido sem reserva"}[a.substab]||"", st(a.substab));
+  R("Prazo de validade", a.prazo==="INDETERMINADO"?"indeterminado":(a.prazo==="DEFINIDO"?a.prazoTexto:""), a.prazo==="DEFINIDO"?st(a.prazoTexto):st(a.prazo));
+  R("CNIB — resultado", a.cnib.resultado, st(a.cnib.resultado));
+  R("CNIB — código hash", a.cnib.hash, st(a.cnib.hash));
+  if(a.cnib.resultado==="POSITIVO") at("CNIB com resultado POSITIVO: há indisponibilidade de bens. A procuração pode ser lavrada, mas os bens indisponíveis não poderão ser alienados ou onerados; consigne a ciência do outorgante.");
+  const pres=[]; a.outorgantes.forEach(o=>{ if(o.tp==="PF") pres.push(o.pf); else o.pj.reps.forEach(r=>pres.push(r)); });
+  if(pres.some(p=>p.assin && p.assin!=="normal")){
+    R("Assinante a rogo", a.rogo.nome, st(a.rogo.nome)); R("Testemunha 1", a.rogo.t1, st(a.rogo.t1)); R("Testemunha 2", a.rogo.t2, st(a.rogo.t2));
+  }
+  const tot = EMOL.reduce((s,[k])=>s+(parseFloat(String(a.emol[k]||"").replace(/\./g,"").replace(",","."))||0),0);
+  const informado = parseFloat(String(a.emol.total||"").replace(/\./g,"").replace(",","."));
+  const todos = EMOL.every(([k])=>!vazio(a.emol[k]));
+  const difere = todos && !isNaN(informado) && Math.abs(tot-informado)>0.009;
+  R("Emolumentos", todos?"informados":"", todos ? (difere?"ATENÇÃO":"OK") : "PENDENTE", difere?"a soma das rubricas é R$ "+tot.toFixed(2).replace(".",","):"");
+  if(difere) at("Emolumentos: a soma das rubricas (R$ "+tot.toFixed(2).replace(".",",")+") não confere com o total informado (R$ "+a.emol.total+").");
+  const lista = documentos(a).flatMap(g=>g.itens), entregues = lista.filter(x=>a.docs && a.docs[x.id]).length;
+  R("Documentos apresentados", entregues+" de "+lista.length, entregues===lista.length?"OK":"PENDENTE", entregues<lista.length?"marque na etapa Ato":"");
+  R("Selo digital", a.selo, vazio(a.selo)?"PENDENTE":"OK", vazio(a.selo)?"aposto na lavratura":"");
+  return {rows, alertas};
+}
+
+/* ----- .docx ----- */
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const RPR = (b, hl, extra) => '<w:rPr><w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma" w:eastAsia="Tahoma"/>'+(b?'<w:b/><w:bCs/>':'')+(extra||'')+'<w:color w:val="000000"/><w:sz w:val="24"/><w:szCs w:val="24"/>'+(hl?'<w:highlight w:val="yellow"/>':'')+'<w:lang w:val="pt-BR"/></w:rPr>';
+const PPR = jc => '<w:pPr><w:widowControl/><w:suppressAutoHyphens/><w:spacing w:before="0" w:after="0" w:line="240" w:lineRule="auto"/><w:ind w:left="57" w:right="0" w:hanging="0"/><w:jc w:val="'+jc+'"/></w:pPr>';
+const run = (t,b,hl,extra) => '<w:r>'+RPR(b,hl,extra)+'<w:t xml:space="preserve">'+esc(t)+'</w:t></w:r>';
+const par = (jc, runs) => '<w:p>'+PPR(jc)+(runs||'')+'</w:p>';
+function documentXml(m){
+  // une segmentos vizinhos de mesmo estilo
+  const juntos=[]; m.seg.forEach(s=>{ const u=juntos[juntos.length-1]; if(u && u.b===s.b && !!u.p===!!s.p) u.t+=s.t; else juntos.push({t:s.t,b:s.b,p:s.p}); });
+  let body = par("center", run(m.titulo,true,false,'<w:u w:val="single"/>'));
+  body += par("both", "");
+  body += par("both", juntos.map(s=>run(s.t,s.b,s.p)).join(""));
+  m.ass.forEach(x=>{
+    body += par("center","") + par("center","") + par("center", run("______________________________________________"));
+    body += par("center", run(x.nome,true,/PENDENTE/.test(x.nome)));
+    if(x.sub) body += par("center", run(x.sub));
+  });
+  const sect = '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="2268" w:right="850" w:bottom="567" w:left="1134" w:header="1984" w:footer="0" w:gutter="0"/><w:cols w:space="720"/><w:docGrid w:linePitch="360"/></w:sectPr>';
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>'+body+sect+'</w:body></w:document>';
+}
+const DOCX_FIXOS = {
+  "[Content_Types].xml":'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/settings.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>',
+  "_rels/.rels":'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>',
+  "word/_rels/document.xml.rels":'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/settings" Target="settings.xml"/></Relationships>',
+  "word/styles.xml":'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Tahoma" w:hAnsi="Tahoma" w:cs="Tahoma" w:eastAsia="Tahoma"/><w:sz w:val="24"/><w:szCs w:val="24"/><w:lang w:val="pt-BR"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:before="0" w:after="0" w:line="240" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style></w:styles>',
+  "word/settings.xml":'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:defaultTabStop w:val="709"/><w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat></w:settings>',
+  "docProps/core.xml":'<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>Procuração Pública</dc:title><dc:language>pt-BR</dc:language></cp:coreProperties>'
+};
+function textoPlano(m){ return m.titulo+"\n\n"+m.seg.map(s=>s.t).join("")+"\n\n"+m.ass.map(x=>"______________________________________________\n"+x.nome+(x.sub?"\n"+x.sub:"")).join("\n\n"); }
+
+return {VAL, checarDocs, numerosDe, UFS, normalizar, enderecoTexto, MODELOS, PODERES, REGIMES, CARGOS_ESC, EMOL, documentos, documentosTexto, novoAto, novaParte, novaPF, montar, conferir, documentXml, DOCX_FIXOS, textoPlano,
+  cpfOk, cnpjOk, fmtCPF, fmtCNPJ, fmtCEP, dataBR, dataExtensoSeg, extenso, vazio};
+})();
+if(typeof module!=="undefined") module.exports=N;
+</script>
+
+<script>
+/* ===== Interface ===== */
+(function(){
+const $ = s => document.querySelector(s);
+const H = s => String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const LS_KEY = "livro-procuracoes";
+let db = null, downloads = null, modoLocal = false;
+let arquivo = {};          // id -> registro
+let atual = null;          // id aberto
+let etapa = "ato";
+let filtro = "todas", termo = "";
+let escreventes = [];
+let padroes = {};        // valores salvos que entram em toda procuração nova
+let tela = "trabalho";   // "trabalho" ou "padroes"
+let fichaAberta = false;
+let escolhido = "amplos_pf";  // modelo em destaque na tela de nova procuração
+
+function toast(t){ const d=document.createElement("div"); d.className="toast"; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(),2600); }
+function hojeISO(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function uid(){ return "p"+Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function lsLer(){ try{ return JSON.parse(localStorage.getItem(LS_KEY)||"{}"); }catch(e){ return {}; } }
+function lsGravar(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(arquivo)); }catch(e){} }
+
+/* ---- persistência ---- */
+// Três modos: biblioteca do Claude (db), servidor do cartório (api/) ou só este navegador.
+let servidor = false;
+const API = async (metodo, url, corpo) => {
+  const r = await fetch(url, {method:metodo, credentials:"same-origin", headers:{"Content-Type":"application/json","X-Livro":"1"}, body: corpo===undefined ? undefined : JSON.stringify(corpo)});
+  if(r.status===401){ location.href="/login"; throw new Error("sessão expirada"); }
+  if(!r.ok){ const d=await r.json().catch(()=>({})); throw new Error(d.erro || "erro "+r.status); }
+  return r.json();
+};
+const hora = () => new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+let fila = Promise.resolve(), timer = null, sujo = new Set();
+function salvarDepois(id){ if(arquivo[id]) arquivo[id].atualizadoEm=new Date().toISOString(); sujo.add(id); clearTimeout(timer); timer=setTimeout(descarregar, 700); estado("Salvando…"); }
+function descarregar(){
+  const ids=[...sujo]; sujo.clear();
+  const falhou = e => estado("Não foi possível salvar: "+(e&&e.message||"erro")+". Suas alterações continuam na tela.");
+  ids.forEach(id=>{ const reg=arquivo[id]; if(!reg) return;
+    if(db) fila = fila.then(()=>db.collection("procuracoes").doc(id).set(JSON.parse(JSON.stringify(reg)))).then(()=>estado("Arquivado na biblioteca às "+hora())).catch(falhou);
+    else if(servidor) fila = fila.then(()=>API("PUT","/api/procuracoes/"+id,reg)).then(()=>estado("Arquivado no servidor do cartório às "+hora())).catch(e=>{ sujo.add(id); falhou(e); });
+  });
+  if(modoLocal){ lsGravar(); estado("Salvo neste navegador às "+hora()); }
+  renderLista();
+}
+function excluir(id){
+  delete arquivo[id];
+  if(db) fila = fila.then(()=>db.collection("procuracoes").doc(id).delete()).catch(()=>{});
+  else if(servidor) fila = fila.then(()=>API("DELETE","/api/procuracoes/"+id)).catch(e=>toast("Não foi possível excluir: "+e.message));
+  else lsGravar();
+  if(atual===id){ atual=null; }
+  renderLista(); renderMesa(); toast("Procuração excluída");
+}
+function estado(t){ const el=$("#estado"); el.textContent = t; el.dataset.t = /Não foi|indisponível|desconectado/.test(t) ? "erro" : (/Salvando|Conectando|Modo local|Reconectando/.test(t) ? "aviso" : "ok"); }
+
+// recebe a lista vinda de fora sem perder o que está sendo digitado aqui
+function aplicarRemoto(novo){
+  sujo.forEach(id=>{ if(arquivo[id]) novo[id]=arquivo[id]; });
+  Object.keys(novo).forEach(id=>{ const loc=arquivo[id]; if(loc && String(loc.atualizadoEm||"")>String(novo[id].atualizadoEm||"")) novo[id]=loc; });
+  const mudouAtual = atual && arquivo[atual] && novo[atual] && JSON.stringify(novo[atual])!==JSON.stringify(arquivo[atual]);
+  arquivo=novo; renderLista();
+  if(atual && !arquivo[atual]){ atual=null; renderMesa(); }
+  else if(mudouAtual && !(document.activeElement && document.activeElement.closest && document.activeElement.closest(".mesa"))) redesenha();
+}
+
+async function iniciar(){
+  renderLista(); renderMesa();
+  const cl = window.claude;
+  if(cl && cl.use){
+    try{ db = await cl.use("db"); }catch(e){ db=null; }
+    try{ downloads = await cl.use("downloads"); }catch(e){ downloads=null; }
+  }
+  if(db){
+    db.collection("procuracoes").onSnapshot(snap=>{
+      const novo={}; snap.docs.forEach(d=>{ const x=d.data(); if(x) novo[d.id]=JSON.parse(JSON.stringify(x)); });
+      aplicarRemoto(novo);
+      estado("Biblioteca compartilhada · "+Object.keys(arquivo).length+" procuração(ões)");
+    }, err=>estado("Biblioteca indisponível: "+err.message));
+    db.doc("config/cartorio").onSnapshot(s=>{ const d=s.data(); escreventes=d&&d.escreventes ? JSON.parse(JSON.stringify(d.escreventes)) : [];
+      if(!cfgSujo) padroes=d&&d.padroes ? JSON.parse(JSON.stringify(d.padroes)) : {};
+      if(!(document.activeElement && document.activeElement.closest && document.activeElement.closest(".mesa"))) redesenha(); }, ()=>{});
+    return;
+  }
+  // servidor do cartório?
+  if(/^https?:$/.test(location.protocol)){
+    try{ const r=await fetch("/api/sessao",{credentials:"same-origin"});
+      if(r.status===401){ location.href="/login"; return; }
+      if(r.ok && (await r.json()).ok) servidor=true;
+    }catch(e){}
+  }
+  if(servidor){ iniciarServidor(); return; }
+  modoLocal = true; arquivo = lsLer();
+  try{ escreventes = JSON.parse(localStorage.getItem(LS_KEY+"-esc")||"[]"); }catch(e){ escreventes=[]; }
+  try{ padroes = JSON.parse(localStorage.getItem(LS_KEY+"-padroes")||"{}"); }catch(e){ padroes={}; }
+  estado("Modo local: as procurações ficam salvas apenas neste navegador.");
+  renderLista(); renderMesa();
+}
+async function iniciarServidor(){
+  const l=document.createElement("link"); l.rel="manifest"; l.href="/manifest.webmanifest"; document.head.appendChild(l);
+  const sair=$("#bt-sair"); sair.hidden=false;
+  sair.addEventListener("click", async()=>{ try{ await API("POST","/api/sair",{}); }catch(e){} location.href="/login"; });
+  let espera=null;
+  const recarregar = async () => {
+    try{
+      aplicarRemoto(await API("GET","/api/procuracoes"));
+      const c=await API("GET","/api/cartorio"); escreventes=c.escreventes||[]; if(!cfgSujo) padroes=c.padroes||{};
+      estado("Servidor do cartório · "+Object.keys(arquivo).length+" procuração(ões)");
+    }catch(e){ estado("Servidor desconectado: "+e.message); }
+  };
+  await recarregar(); renderMesa();
+  const ev = new EventSource("/api/eventos");
+  ev.onmessage = () => { clearTimeout(espera); espera=setTimeout(recarregar, 300); };
+  ev.onerror = () => estado("Reconectando ao servidor do cartório…");
+  ev.onopen = () => recarregar();
+}
+let cfgSujo=false, cfgTimer=null;
+function salvarEscreventes(){
+  cfgSujo=false;
+  const corpo={escreventes, padroes:JSON.parse(JSON.stringify(padroes))};
+  if(db) db.doc("config/cartorio").set(corpo).catch(()=>toast("Não foi possível salvar os valores do cartório"));
+  else if(servidor) API("PUT","/api/cartorio",corpo).catch(()=>toast("Não foi possível salvar os valores do cartório"));
+  else try{ localStorage.setItem(LS_KEY+"-esc", JSON.stringify(escreventes)); localStorage.setItem(LS_KEY+"-padroes", JSON.stringify(padroes)); }catch(e){}
+}
+function salvarConfigDepois(){ cfgSujo=true; clearTimeout(cfgTimer); cfgTimer=setTimeout(()=>{ salvarEscreventes(); estado("Valores salvos atualizados às "+hora()); }, 600); }
+
+/* ---- biblioteca ---- */
+const STATUS = {rascunho:["Rascunho","pend"], conferida:["Conferida","inf"], lavrada:["Lavrada","ok"]};
+function nomeParte(o){ return o ? (o.tp==="PJ" ? o.pj.razao : o.pf.nome) : ""; }
+function tituloReg(r){ const n=nomeParte(r.outorgantes[0]); return (n||"Sem outorgante").trim(); }
+function renderFiltros(){
+  const tipos=["todas"].concat([...new Set(Object.values(arquivo).map(r=>r.tipo))].sort());
+  $("#filtros").innerHTML = tipos.map(t=>'<button type="button" class="chip'+(filtro===t?" on":"")+'" data-f="'+H(t)+'">'+H(t==="todas"?"Todas":t)+'</button>').join("");
+}
+function renderLista(){
+  renderFiltros();
+  const tot=Object.keys(arquivo).length; $("#contagem").textContent = tot ? tot+(tot>1?" atos":" ato") : "";
+  const q = termo.toLowerCase().replace(/[.\-\/]/g,"");
+  const regs = Object.entries(arquivo).filter(([id,r])=>{
+    if(filtro!=="todas" && r.tipo!==filtro) return false;
+    if(!q) return true;
+    const alvo = [r.tipo].concat(r.outorgantes.concat(r.outorgados).map(o=>o.tp==="PJ"?o.pj.razao+" "+o.pj.cnpj+" "+o.pj.reps.map(x=>x.nome+" "+x.cpf).join(" "):o.pf.nome+" "+o.pf.cpf)).join(" ").toLowerCase().replace(/[.\-\/]/g,"");
+    return alvo.includes(q);
+  }).sort((a,b)=>String(b[1].atualizadoEm||"").localeCompare(String(a[1].atualizadoEm||"")));
+  if(!regs.length){
+    $("#lista").innerHTML = '<div class="vazio">'+(Object.keys(arquivo).length ? "Nenhuma procuração encontrada para esta busca." : "Nenhuma procuração arquivada ainda. Escolha um modelo ao lado para lavrar a primeira; ela fica guardada aqui automaticamente.")+'</div>';
+    return;
+  }
+  $("#lista").innerHTML = regs.map(([id,r])=>{
+    const m = N.montar(r); const s=STATUS[r.status]||STATUS.rascunho;
+    const od = nomeParte(r.outorgados[0]);
+    return '<button type="button" class="item'+(id===atual?" on":"")+'" data-id="'+id+'"><b>'+H(tituloReg(r))+'</b><span class="data">'+(r.ato.data?N.dataBR(r.ato.data):'')+'</span>'+
+      '<span class="meta">'+H(r.tipo)+(od?' → '+H(od):'')+'</span>'+
+      '<span class="meta"><span class="pill '+s[1]+'">'+s[0]+'</span>'+(N.checarDocs(r).some(x=>x.bloq)?'<span class="pill at">erro em documento</span>':'')+(m.pend.length?'<span class="pill pend">'+m.pend.length+' pendência'+(m.pend.length>1?'s':'')+'</span>':'<span class="pill ok">completa</span>')+'</span></button>';
+  }).join("");
+}
+$("#filtros").addEventListener("click",e=>{ const b=e.target.closest("[data-f]"); if(!b) return; filtro=b.dataset.f; renderLista(); });
+$("#busca").addEventListener("input",e=>{ termo=e.target.value.trim(); renderLista(); });
+$("#lista").addEventListener("click",e=>{ const b=e.target.closest("[data-id]"); if(!b) return; atual=b.dataset.id; tela="trabalho"; etapa="ato"; fichaAberta=false; renderLista(); renderMesa(); });
+$("#bt-nova").addEventListener("click",()=>{ atual=null; tela="trabalho"; renderLista(); renderMesa(); });
+$("#bt-padroes").addEventListener("click",()=>{ atual=null; tela="padroes"; renderLista(); renderMesa(); window.scrollTo(0,0); });
+
+// valores salvos entram na procuração nova; o que não estiver salvo fica em branco
+function aplicarPadroes(r){
+  if(padroes.escNome){ r.ato.escNome=padroes.escNome; r.ato.escCargo=padroes.escCargo||""; }
+  if(padroes.substab) r.substab=padroes.substab;
+  if(padroes.prazo){ r.prazo=padroes.prazo; r.prazoTexto=padroes.prazoTexto||""; }
+  if(padroes.emol) Object.keys(r.emol).forEach(k=>{ if(padroes.emol[k]) r.emol[k]=padroes.emol[k]; });
+}
+function criar(modeloId){
+  const id=uid(); const r=N.novoAto(modeloId);
+  r.ato.data=hojeISO(); r.criadoEm=new Date().toISOString();
+  aplicarPadroes(r);
+  arquivo[id]=r; atual=id; etapa="ato"; salvarDepois(id); renderMesa();
+}
+
+/* ---- campos ---- */
+function get(obj, path){ return path.split(".").reduce((o,k)=>o==null?undefined:o[k], obj); }
+function set(obj, path, val){ const ks=path.split("."); const last=ks.pop(); const alvo=ks.reduce((o,k)=>o[k],obj); alvo[last]=val; }
+function fid(path){ return "f-"+path.replace(/\./g,"-"); }
+function campo(path, label, o){
+  o=o||{}; const r=arquivo[atual]; const v=get(r,path); const val=v==null?"":v;
+  const cls=["f"]; if(o.cls) cls.push(o.cls); if(o.dado) cls.push("dado"); if(o.larga) cls.push("larga"); if(o.req) cls.push("req");
+  if(o.req && N.vazio(val)) cls.push("falta");
+  const ev = errosMapa[path]; if(o.erro && !ev) cls.push("erro");
+  if(ev){ cls.push(ev.bloq?"erro":"atencao"); o.dicaBase=o.dica; o.dica=ev.msg; }
+  else if(/\.(cpf|cnpj)$/.test(path) && !N.vazio(val)){ const ja=jaNaBiblioteca(val); if(ja){ cls.push("info"); o.dicaBase=o.dica; o.dica=ja; } }
+  let ctl;
+  if(o.opts) ctl='<select id="'+fid(path)+'" data-p="'+path+'"'+(o.re?' data-re="1"':'')+'><option value="">— selecione —</option>'+o.opts.map(x=>{ const [k,l]=Array.isArray(x)?x:[x,x]; return '<option value="'+H(k)+'"'+(String(val)===String(k)?" selected":"")+'>'+H(l)+'</option>'; }).join("")+'</select>';
+  else if(o.ta) ctl='<textarea id="'+fid(path)+'" data-p="'+path+'" placeholder="'+H(o.ph||"")+'">'+H(val)+'</textarea>';
+  else ctl='<input id="'+fid(path)+'" data-p="'+path+'" type="'+(o.tipo||"text")+'" value="'+H(val)+'" placeholder="'+H(o.ph||"")+'"'+(o.mask?' data-mask="'+o.mask+'"':'')+(o.list?' list="'+o.list+'"':'')+' autocomplete="off">';
+  return '<label class="'+cls.join(" ")+'"><span class="rot">'+H(label)+'</span>'+ctl+'<span class="dica" data-base="'+H(o.dicaBase!==undefined?(o.dicaBase||""):(o.dica||""))+'"'+(o.dica?'':' hidden')+'>'+H(o.dica||"")+'</span></label>';
+}
+let errosMapa = {};
+function calcErros(r){ errosMapa={}; if(!r) return; N.checarDocs(r).forEach(x=>{ if(!errosMapa[x.path] || x.bloq) errosMapa[x.path]=x; }); }
+// mostra o erro de cada campo enquanto a pessoa digita, sem redesenhar a tela
+function atualizarErros(){
+  const antes=errosMapa; calcErros(arquivo[atual]);
+  const paths=new Set(Object.keys(antes).concat(Object.keys(errosMapa)));
+  paths.forEach(path=>{ const el=document.getElementById(fid(path)); if(!el) return; const lab=el.closest("label.f"); if(!lab) return;
+    const d=lab.querySelector(".dica"); const ev=errosMapa[path];
+    lab.classList.toggle("erro", !!(ev&&ev.bloq)); lab.classList.toggle("atencao", !!(ev&&!ev.bloq));
+    if(d){ const txt = ev ? ev.msg : (d.dataset.base||""); d.textContent=txt; d.hidden=!txt; }
+  });
+}
+// o mesmo CPF/CNPJ em outra procuração da biblioteca (só informa: pode ser um cliente que voltou)
+function jaNaBiblioteca(num){
+  const d=String(num).replace(/\D/g,""); if(d.length!==11 && d.length!==14) return "";
+  const outros=Object.entries(arquivo).filter(([id,r])=>id!==atual && N.numerosDe(r).includes(d));
+  if(!outros.length) return "";
+  return "Já consta em "+outros.length+" procuração(ões) da biblioteca: "+outros.slice(0,3).map(([id,r])=>tituloReg(r)+" ("+r.tipo+(r.ato&&r.ato.data?", "+N.dataBR(r.ato.data):"")+")").join("; ");
+}
+function seg(path, opcoes){
+  const r=arquivo[atual]; const v=get(r,path);
+  return '<span class="seg" role="group">'+opcoes.map(([k,l])=>'<button type="button" data-seg="'+path+'" data-v="'+k+'" class="'+(v===k?"on":"")+'">'+H(l)+'</button>').join("")+'</span>';
+}
+
+function formPF(base, p, modo){
+  // modo: "outorgante" | "outorgado" | "rep"
+  const venc = p.docValidade && arquivo[atual].ato.data && p.docValidade < arquivo[atual].ato.data;
+  let h='<div class="grade">';
+  h+=campo(base+".nome","Nome completo",{req:1,larga:1});
+  if(modo==="rep") h+=campo(base+".cargo","Cargo na empresa",{req:1,ph:"sócio administrador"});
+  h+=campo(base+".sexo","Sexo (para concordância)",{opts:[["F","Feminino"],["M","Masculino"]],req:1,re:1});
+  h+=campo(base+".nac","Nacionalidade",{req:1,ph:"brasileira"});
+  h+=campo(base+".prof","Profissão",{req:1});
+  h+=campo(base+".cpf","CPF",{req:1,dado:1,mask:"cpf",ph:"000.000.000-00"});
+  h+=campo(base+".docTipo","Documento de identidade",{opts:[["CNH","CNH"],["RG","RG"],["RNM","RNM (estrangeiro)"],["PASS","Passaporte"],["OAB","Carteira da OAB"],["OUTRO","Outro"]],req:1,re:1});
+  if(p.docTipo==="OUTRO") h+=campo(base+".docOutro","Tipo do documento",{req:1,ph:"Carteira do CRM"});
+  if(p.docTipo) h+=campo(base+".docNum",p.docTipo==="CNH"?"Nº de registro da CNH":"Número",{req:1,dado:1});
+  if(["RG","RNM","PASS","OUTRO"].includes(p.docTipo)) h+=campo(base+".docOrg","Órgão emissor",{req:1,ph:p.docTipo==="RG"?"SSP":""});
+  if(["CNH","RG","OAB"].includes(p.docTipo)) h+=campo(base+".docUF",p.docTipo==="CNH"?"DETRAN (UF)":(p.docTipo==="OAB"?"Seção (UF)":"UF"),{req:1,ph:"SP"});
+  if(p.docTipo==="CNH") h+=campo(base+".cnhRg","RG que consta na CNH",{req:1,dado:1,ph:"0000000-SSP/SP"});
+  if(p.docTipo) h+=campo(base+".docValidade","Validade do documento",{tipo:"date",erro:venc,dica:venc?"Vencido na data do ato":""});
+  if(modo!=="outorgado") h+=campo(base+".nasc","Data de nascimento",{tipo:"date",dica:"Usada só para conferência (idoso/menor)"});
+  h+=campo(base+".ec","Estado civil",{opts:[["solteiro","Solteiro(a)"],["casado","Casado(a)"],["divorciado","Divorciado(a)"],["separado","Separado(a) judicialmente"],["viuvo","Viúvo(a)"]],req:1,re:1});
+  h+='</div>';
+  if(modo!=="outorgado" && p.ec){
+    h+='<div class="sub"><div class="grade">';
+    if(p.ec==="casado"){
+      h+=campo(base+".conjNome","Nome do cônjuge",{req:1});
+      h+=campo(base+".regime","Regime de bens",{opts:N.REGIMES,req:1,re:1});
+      h+=campo(base+".casData","Data do casamento",{tipo:"date",req:1});
+      h+=campo(base+".certMat","Matrícula da certidão de casamento",{req:1,dado:1});
+      h+=campo(base+".pacto","Pacto antenupcial (se houver)",{ph:"lavrada no … Tabelião, livro …, fls. …, registrada sob nº …",larga:1});
+    } else {
+      if(p.ec==="solteiro") h+=campo(base+".certTipo","Certidão de nascimento",{opts:[["inteiro teor","Inteiro teor"],["breve relato","Breve relato"]]});
+      h+=campo(base+".certData","Certidão emitida em",{tipo:"date",req:1});
+      h+=campo(base+".certMat","Matrícula da certidão",{req:1,dado:1,larga:1});
+      h+=campo(base+".ue","União estável",{opts:[["nao","Declara não conviver"],["sim","Convive em união estável"]],req:1,re:1});
+      if(p.ue==="sim") h+=campo(base+".ueNome","Nome do(a) companheiro(a)",{req:1});
+    }
+    h+=campo(base+".nomeCert","Nome como consta na certidão (se diferente)",{dica:"Preencha só para conferir divergência de nome",larga:1});
+    h+='</div></div>';
+  }
+  h+='<div class="grade">';
+  h+='</div>'+formEndereco(base, p, p.end)+'<div class="grade">';
+  h+=campo(base+".email","E-mail (opcional)",{tipo:"email"});
+  h+=campo(base+".tel","Telefone (opcional)",{tipo:"tel"});
+  if(modo!=="outorgado") h+=campo(base+".assin","Assinatura",{opts:[["normal","Assina normalmente"],["nao_alfabetizado","Não alfabetizado(a) — a rogo"],["dificuldade","Dificuldade para assinar — a rogo"]],re:1});
+  h+='</div>';
+  return h;
+}
+// CEP primeiro: ao completar os 8 dígitos, rua, bairro, cidade e UF são buscados sozinhos
+function formEndereco(base, o, antigo){
+  const legado = N.vazio(o.endr && o.endr.logr) && !N.vazio(antigo);
+  return '<div class="grade-end">'+
+    campo(base+".cep","CEP",{req:1,dado:1,mask:"cep",ph:"00000-000",cls:"c-cep",dica:cepMsg[base]||"Digite o CEP para preencher o endereço"})+
+    campo(base+".endr.logr","Rua / logradouro",{req:!legado,cls:"c-logr",ph:"Rua, Avenida, Praça…",dica:legado?"Endereço antigo: "+antigo:""})+
+    campo(base+".endr.num","Número",{req:!legado,cls:"c-num",ph:"198 ou s/n"})+
+    campo(base+".endr.compl","Complemento (opcional)",{cls:"c-compl",ph:"apto 12, bloco B"})+
+    campo(base+".endr.bairro","Bairro",{req:!legado,cls:"c-bairro"})+
+    campo(base+".endr.cidade","Cidade",{req:!legado,cls:"c-cidade"})+
+    campo(base+".endr.uf","UF",{req:!legado,cls:"c-uf",opts:N.UFS})+
+  '</div>';
+}
+function formPJ(base, pj){
+  let h='<div class="grade">';
+  h+=campo(base+".razao","Razão social",{req:1,larga:1});
+  h+=campo(base+".cnpj","CNPJ",{req:1,dado:1,mask:"cnpj",ph:"00.000.000/0000-00"});
+  h+=campo(base+".nire","NIRE ou registro no RCPJ",{dado:1});
+  h+='</div><h4 class="sub-tit">Endereço da sede</h4>'+formEndereco(base, pj, pj.sede)+'<div class="grade">';
+  h+=campo(base+".atoConst","Ato constitutivo (nº e data do registro na JUCESP)",{req:1,larga:1,ph:"registrado na JUCESP sob nº …, em …"});
+  h+=campo(base+".ultAlt","Última alteração consolidada (nº e data)",{req:1,larga:1,ph:"registrada sob nº …, em …"});
+  h+=campo(base+".certSimpl","Certidão simplificada emitida em",{tipo:"date",req:1});
+  h+=campo(base+".clausula","Cláusula que dá poderes para outorgar procuração",{req:1,ph:"Sétima"});
+  h+=campo(base+".adm","Administração",{opts:[["isolada","Isolada"],["conjunta","Conjunta"]],re:1});
+  h+='</div>';
+  pj.reps.forEach((r,i)=>{
+    h+='<div class="sub"><div class="bloco-topo"><h3>Representante legal '+(pj.reps.length>1?i+1:"")+'</h3>'+(pj.reps.length>1?'<button type="button" class="mini" data-acao="rmRep" data-base="'+base+'" data-i="'+i+'">Remover</button>':'')+'</div>'+formPF(base+".reps."+i, r, "rep")+'</div>';
+  });
+  h+='<div><button type="button" class="mini" data-acao="addRep" data-base="'+base+'">+ Representante</button></div>';
+  return h;
+}
+function formPartes(lista, chave, rotulo){
+  const r=arquivo[atual];
+  let h='';
+  r[chave].forEach((o,i)=>{
+    const base=chave+"."+i;
+    h+='<section class="bloco"><div class="bloco-topo"><h3>'+rotulo+(r[chave].length>1?" "+(i+1):"")+'</h3><span style="display:flex;gap:8px;flex-wrap:wrap">'+
+      seg(base+".tp",[["PF","Pessoa física"],["PJ","Pessoa jurídica (CNPJ)"]])+
+      (r[chave].length>1?'<button type="button" class="mini" data-acao="rmParte" data-chave="'+chave+'" data-i="'+i+'">Remover</button>':'')+'</span></div>';
+    h+= o.tp==="PJ" ? formPJ(base+".pj", o.pj) : formPF(base+".pf", o.pf, chave==="outorgantes"?"outorgante":"outorgado");
+    h+='</section>';
+  });
+  h+='<div><button type="button" class="btn" data-acao="addParte" data-chave="'+chave+'">+ Adicionar '+rotulo.toLowerCase()+'</button></div>';
+  if(chave==="outorgados" && r.outorgados.length>1) h+='<section class="bloco"><h3>Como os procuradores atuam</h3>'+seg("atuacao",[["isoladamente","Em conjunto ou isoladamente"],["conjunto","Sempre em conjunto"]])+'</section>';
+  return h;
+}
+
+/* ---- etapas ---- */
+const ETAPAS=[["ato","Ato"],["outorgantes","Outorgantes"],["outorgados","Outorgados"],["poderes","Poderes"],["fecho","Encerramento"],["conferencia","Conferência"]];
+let mesaDe=null;
+function renderMesa(){
+  const mesa=$("#mesa");
+  // a altura travada só vale enquanto a mesma procuração estiver aberta
+  if(mesaDe!==atual){ mesa.style.minHeight=""; mesaDe=atual; }
+  if(tela==="padroes" && !atual){ mesa.innerHTML=telaPadroes(); return; }
+  if(!atual || !arquivo[atual]){
+    const mSel=N.MODELOS.find(m=>m.id===escolhido)||N.MODELOS[0];
+    const card=m=>'<button type="button" class="modelo'+(m.id===mSel.id?" on":"")+'" data-ver="'+m.id+'" aria-pressed="'+(m.id===mSel.id)+'"><b>'+H(m.nome)+'</b><span>'+H(m.sub)+'</span><span class="tags">'+
+        '<span class="pill '+(m.ot==="PJ"?"inf":"ok")+'">'+(m.ot==="PJ"?"CNPJ":"CPF")+'</span>'+(m.poderes.length?'<span class="pill pend">'+m.poderes.length+' poder'+(m.poderes.length>1?'es':'')+'</span>':'')+'</span></button>';
+    const amostra=N.novoAto(mSel.id);
+    mesa.innerHTML='<div class="topo"><div><div class="eyebrow">Nova procuração</div><h2>Escolha o modelo do ato</h2></div></div>'+
+      '<p class="intro">Selecione um tipo para ver os documentos que o cliente precisa trazer. Depois clique em "Começar esta procuração".</p>'+
+      '<div class="escolha"><div class="escolha-modelos">'+
+      '<section class="grupo-modelos"><h3>Pessoa física (CPF)</h3><div class="modelos">'+N.MODELOS.filter(m=>m.ot==="PF").map(card).join("")+'</div></section>'+
+      '<section class="grupo-modelos"><h3>Empresa (CNPJ)</h3><div class="modelos">'+N.MODELOS.filter(m=>m.ot==="PJ").map(card).join("")+'</div></section></div>'+
+      '<aside class="docs-painel" aria-live="polite"><div class="docs-cab"><span class="eyebrow">Documentos necessários</span><b>'+H(mSel.nome)+'</b><span>'+H(mSel.sub)+'</span></div>'+
+      listaDocs(amostra,false)+
+      '<p class="aviso">A lista se ajusta ao preencher a procuração (estado civil, cônjuge, assinatura a rogo, poderes incluídos).</p>'+
+      '<div class="docs-acoes"><button type="button" class="btn p" data-modelo="'+mSel.id+'">Começar esta procuração</button><button type="button" class="btn" data-copiar-docs="'+mSel.id+'">Copiar lista para o cliente</button></div></aside></div>';
+    return;
+  }
+  const r=N.normalizar(arquivo[atual]); const s=STATUS[r.status]||STATUS.rascunho;
+  calcErros(r);
+  const mod=N.MODELOS.find(x=>x.id===r.modelo);
+  let h='<div class="topo"><div><div class="eyebrow"><span>Procuração · '+H(mod?mod.nome+" · "+mod.sub:r.tipo)+'</span><span class="pill '+s[1]+'">'+s[0]+'</span>'+(r.ato.data?'<span>'+N.dataBR(r.ato.data)+'</span>':'')+'</div><h2>'+H(tituloReg(r))+'</h2></div><div class="acoes">'+
+    '<button type="button" class="btn" data-acao="duplicar">Duplicar</button>'+
+    '<button type="button" class="btn perigo" data-acao="excluir">Excluir</button></div></div>';
+  const faltas=faltasPorEtapa(r);
+  h+='<div class="trabalho"><nav class="etapas" aria-label="Etapas">'+ETAPAS.map(([k,l],i)=>{ const q=faltas[k]; const feita=k!=="conferencia" && q===0 && !faltas.erros[k] || (k==="conferencia" && r.fichaOk);
+    return '<button type="button" data-etapa="'+k+'" class="'+(etapa===k?"on ":"")+(feita?"feita":"")+'"'+(etapa===k?' aria-current="step"':'')+'><span class="n">'+(feita?"✓":(i+1))+'</span>'+l+(faltas.erros[k]?'<span class="q erro" title="documentos com erro">'+faltas.erros[k]+'!</span>':(q&&k!=="conferencia"?'<span class="q" title="itens pendentes">'+q+'</span>':''))+'</button>'; }).join("")+'</nav>';
+  h+='<div class="painel">'+painel(r)+'</div></div>';
+  mesa.innerHTML=h;
+}
+/* ---- valores salvos ---- */
+function campoPd(path, label, o){
+  o=o||{}; const v=get(padroes,path); const val=v==null?"":v;
+  return '<label class="f'+(o.dado?" dado":"")+(o.larga?" larga":"")+'"><span class="rot">'+H(label)+'</span><input id="pd-'+path.replace(/\./g,"-")+'" data-pd="'+path+'" value="'+H(val)+'" placeholder="'+H(o.ph||"")+'"'+(o.list?' list="'+o.list+'"':'')+' autocomplete="off">'+(o.dica?'<span class="dica">'+H(o.dica)+'</span>':'')+'</label>';
+}
+function segPd(path, opcoes){
+  const v=get(padroes,path)||"";
+  return '<span class="seg" role="group">'+opcoes.map(([k,l])=>'<button type="button" data-pdseg="'+path+'" data-v="'+k+'" class="'+(v===k?"on":"")+'">'+H(l)+'</button>').join("")+'</span>';
+}
+function resumoPadroes(){
+  const l=[];
+  if(padroes.escNome) l.push("escrevente "+padroes.escNome);
+  if(padroes.substab) l.push("substabelecimento "+{VEDADO:"vedado",COM:"com reserva",SEM:"sem reserva"}[padroes.substab]);
+  if(padroes.prazo) l.push("prazo "+(padroes.prazo==="INDETERMINADO"?"indeterminado":padroes.prazoTexto||"definido"));
+  if(padroes.emol && Object.values(padroes.emol).some(Boolean)) l.push("emolumentos");
+  return l;
+}
+function telaPadroes(){
+  const res=resumoPadroes();
+  let h='<div class="topo"><div><div class="eyebrow">Configuração do cartório</div><h2>Valores salvos</h2></div>'+
+    (res.length?'<div class="acoes"><button type="button" class="btn perigo" data-pdacao="limparTudo">Remover todos os valores salvos</button></div>':'')+'</div>';
+  h+='<p class="intro">Estes valores entram sozinhos em toda procuração nova, que já começa pronta. Procurações já feitas não mudam. Para deixar de preencher algo automaticamente, use o botão Remover da seção.</p>';
+  h+='<div class="painel">';
+  // escrevente
+  h+='<section class="bloco"><div class="bloco-topo"><h3>Escrevente padrão</h3>'+(padroes.escNome?'<button type="button" class="mini" data-pdacao="limparEsc">Remover</button>':'<span class="pill pend">não definido</span>')+'</div>';
+  if(escreventes.length) h+='<div class="biblio">'+escreventes.map((e,i)=>'<button type="button" class="chip'+(padroes.escNome===e.nome?" on":"")+'" data-pdacao="escDe" data-i="'+i+'">'+H(e.nome)+' · '+H(e.cargo)+'</button>').join("")+'</div>';
+  h+='<div class="grade">'+campoPd("escNome","Nome completo")+campoPd("escCargo","Cargo",{list:"cargos-pd",dica:"Ex.: Substituta, Escrevente Autorizada"})+'</div>';
+  h+='<datalist id="cargos-pd">'+N.CARGOS_ESC.map(c=>'<option value="'+H(c)+'">').join("")+'</datalist></section>';
+  // cadastro
+  h+='<section class="bloco"><div class="bloco-topo"><h3>Escreventes cadastrados</h3><span class="aviso">'+escreventes.length+' cadastrado'+(escreventes.length===1?'':'s')+'</span></div>';
+  h+= escreventes.length ? '<ul class="lista-cad">'+escreventes.map((e,i)=>'<li><span><b>'+H(e.nome)+'</b> · '+H(e.cargo)+(padroes.escNome===e.nome?' <span class="pill ok">padrão</span>':'')+'</span><button type="button" class="mini" data-pdacao="rmEsc" data-i="'+i+'">Remover</button></li>').join("")+'</ul>'
+    : '<p class="aviso">Nenhum escrevente cadastrado. Preencha o escrevente padrão acima e clique em "Cadastrar".</p>';
+  h+='<div><button type="button" class="mini" data-pdacao="cadEsc">Cadastrar o escrevente padrão na lista</button></div></section>';
+  // substabelecimento e prazo
+  h+='<section class="bloco"><div class="bloco-topo"><h3>Substabelecimento padrão</h3>'+(padroes.substab?'<button type="button" class="mini" data-pdacao="limpar" data-k="substab">Remover</button>':'')+'</div>'+
+    segPd("substab",[["VEDADO","Vedado"],["COM","Permitido com reserva"],["SEM","Permitido sem reserva"]])+'</section>';
+  h+='<section class="bloco"><div class="bloco-topo"><h3>Prazo de validade padrão</h3>'+(padroes.prazo?'<button type="button" class="mini" data-pdacao="limpar" data-k="prazo">Remover</button>':'')+'</div>'+
+    segPd("prazo",[["INDETERMINADO","Indeterminado"],["DEFINIDO","Definido"]])+(padroes.prazo==="DEFINIDO"?'<div class="grade">'+campoPd("prazoTexto","Prazo",{ph:"1 (um) ano a contar desta data"})+'</div>':'')+'</section>';
+  // emolumentos
+  const temEmol = padroes.emol && Object.values(padroes.emol).some(Boolean);
+  h+='<section class="bloco"><div class="bloco-topo"><h3>Emolumentos padrão</h3>'+(temEmol?'<button type="button" class="mini" data-pdacao="limpar" data-k="emol">Remover</button>':'')+'</div>'+
+    '<p class="aviso">Use os valores da tabela vigente. Quando a tabela mudar, atualize aqui; as procurações novas já saem com os valores certos.</p><div class="grade">'+
+    N.EMOL.map(([k,l])=>campoPd("emol."+k,l+" (R$)",{dado:1,ph:"0,00"})).join("")+campoPd("emol.total","Total (R$)",{dado:1,ph:"0,00"})+'</div></section>';
+  h+='</div>';
+  return h;
+}
+function faltasPorEtapa(r){
+  const cf=N.conferir(r); const q={ato:0,outorgantes:0,outorgados:0,poderes:0,fecho:0,conferencia:0}; let at="ato";
+  cf.rows.forEach(x=>{ if(x.sec){ at = /^Outorgante/.test(x.sec)?"outorgantes":/^Outorgado/.test(x.sec)?"outorgados":x.sec==="Poderes"?"poderes":x.sec==="Encerramento"?"fecho":x.sec==="Verificação dos documentos"?null:"ato"; return; }
+    if(at && x.status && x.status!=="OK" && !/Selo digital|NIRE|Documentos apresentados/.test(x.campo)) q[at]++; });
+  q.erros={}; N.checarDocs(r).forEach(x=>{ if(x.bloq) q.erros[x.etapa]=(q.erros[x.etapa]||0)+1; });
+  return q;
+}
+function painel(r){
+  if(etapa==="ato"){
+    let h='<section class="bloco"><h3>Dados do ato</h3><div class="grade">';
+    h+='<label class="f req"><span class="rot">Tipo de procuração</span><select id="f-modelo" data-troca="1">'+N.MODELOS.map(m=>'<option value="'+m.id+'"'+(m.id===r.modelo?" selected":"")+'>'+H(m.nome+" · "+m.sub)+'</option>').join("")+'</select><span class="dica">Trocar aplica os poderes e o tipo de parte do novo modelo; os dados já digitados são mantidos.</span></label>';
+    h+=campo("ato.data","Data do ato",{tipo:"date",req:1,dica:r.ato.data?extensoTxt(r.ato.data):""});
+    h+=campo("status","Situação",{opts:[["rascunho","Rascunho"],["conferida","Conferida"],["lavrada","Lavrada"]]});
+    h+='</div></section>';
+    h+='<section class="bloco"><div class="bloco-topo"><h3>Escrevente que lavra</h3></div>';
+    if(escreventes.length) h+='<div class="biblio">'+escreventes.map((e,i)=>'<button type="button" class="chip'+(r.ato.escNome===e.nome?" on":"")+'" data-acao="usarEsc" data-i="'+i+'">'+H(e.nome)+' · '+H(e.cargo)+'</button>').join("")+'</div>';
+    h+='<div class="grade">'+campo("ato.escNome","Nome completo",{req:1})+campo("ato.escCargo","Cargo",{req:1,list:"cargos",dica:"Entra como \"perante mim, [cargo] da Tabeliã…\""})+'</div>';
+    h+='<datalist id="cargos">'+N.CARGOS_ESC.map(c=>'<option value="'+H(c)+'">').join("")+'</datalist>';
+    h+='<div class="biblio">'+
+      (padroes.escNome && (padroes.escNome!==r.ato.escNome || (padroes.escCargo||"")!==r.ato.escCargo) ? '<button type="button" class="mini" data-acao="usarEscPadrao">Usar o padrão ('+H(padroes.escNome)+')</button>' : '')+
+      (padroes.escNome && padroes.escNome===r.ato.escNome ? '<span class="pill ok">escrevente padrão</span><button type="button" class="mini" data-pdacao="limparEsc">Remover padrão</button>' : '<button type="button" class="mini" data-acao="escPadrao">Salvar como escrevente padrão</button>')+
+      '<button type="button" class="mini" data-acao="salvarEsc">Guardar no cadastro de escreventes</button></div></section>';
+    const lst=N.documentos(r).flatMap(g=>g.itens), ok=lst.filter(x=>r.docs&&r.docs[x.id]).length;
+    h+='<section class="bloco"><div class="bloco-topo"><h3>Documentos necessários</h3><span class="aviso" id="docs-cont">'+ok+' de '+lst.length+' apresentados</span></div>'+
+      '<p class="aviso">Marque cada documento conforme o cliente apresentar. A lista muda com o tipo, as partes e os poderes.</p>'+listaDocs(r,true)+
+      '<div><button type="button" class="mini" data-acao="copiarDocs">Copiar lista para o cliente</button></div></section>';
+    return h;
+  }
+  if(etapa==="outorgantes") return formPartes(r.outorgantes,"outorgantes","Outorgante");
+  if(etapa==="outorgados") return formPartes(r.outorgados,"outorgados","Outorgado");
+  if(etapa==="poderes"){
+    let h='<section class="bloco"><h3>Forma da outorga</h3>'+seg("intro",[["amplos","Amplos e gerais"],["amplos_especiais","Amplos, gerais e especiais"],["especiais","Especiais"]])+'</section>';
+    h+='<section class="bloco"><div class="bloco-topo"><h3>Poderes na ordem da minuta</h3></div>';
+    if(!r.poderes.length) h+='<div class="vazio">Nenhum poder incluído. Adicione da biblioteca de cláusulas abaixo.</div>';
+    r.poderes.forEach((pd,i)=>{
+      const def=N.PODERES[pd.k];
+      h+='<div class="poder"><div class="poder-topo"><span class="num">'+(i+1)+')</span><input id="'+fid("poderes."+i+".titulo")+'" data-p="poderes.'+i+'.titulo" value="'+H(pd.titulo)+'" placeholder="TÍTULO (opcional)" aria-label="Título do poder">'+
+        '<button type="button" class="mini" data-acao="sobe" data-i="'+i+'" aria-label="Subir">↑</button><button type="button" class="mini" data-acao="desce" data-i="'+i+'" aria-label="Descer">↓</button><button type="button" class="mini" data-acao="rmPoder" data-i="'+i+'">Remover</button></div>'+
+        '<span class="aviso">'+H(def.nome)+'</span>';
+      if(def.vars.length) h+='<div class="grade">'+def.vars.map(x=>campo("poderes."+i+".v."+x.n,x.l,{req:x.req,ta:x.ta,ph:x.ph,larga:x.ta})).join("")+'</div>';
+      h+='</div>';
+    });
+    h+='</section><section class="bloco"><h3>Biblioteca de cláusulas</h3><div class="biblio">'+Object.entries(N.PODERES).map(([k,d])=>'<button type="button" class="chip" data-acao="addPoder" data-k="'+k+'">+ '+H(d.nome)+'</button>').join("")+'</div></section>';
+    h+='<section class="bloco"><h3>Cláusulas de efeito especial</h3><div class="biblio">'+
+      [["causaPropria","Em causa própria (art. 685 CC)"],["irrevogavel","Irrevogável (arts. 683–684 CC)"],["citacao","Poder para receber citação"]].map(([k,l])=>'<button type="button" class="chip'+(r.flags[k]?" on":"")+'" data-acao="flag" data-k="'+k+'">'+(r.flags[k]?"✓ ":"")+H(l)+'</button>').join("")+'</div><span class="aviso">Cada uma gera um alerta jurídico na conferência.</span></section>';
+    return h;
+  }
+  if(etapa==="fecho"){
+    let h='<section class="bloco"><h3>Substabelecimento</h3>'+seg("substab",[["VEDADO","Vedado"],["COM","Permitido com reserva"],["SEM","Permitido sem reserva"]])+'</section>';
+    h+='<section class="bloco"><h3>Prazo de validade</h3>'+seg("prazo",[["INDETERMINADO","Indeterminado"],["DEFINIDO","Definido"]])+(r.prazo==="DEFINIDO"?'<div class="grade">'+campo("prazoTexto","Prazo",{req:1,ph:"1 (um) ano a contar desta data"})+'</div>':'')+'</section>';
+    h+='<section class="bloco"><h3>Central de indisponibilidade (CNIB)</h3><div class="grade">'+campo("cnib.resultado","Resultado",{opts:["NEGATIVO","POSITIVO"],req:1})+campo("cnib.hash","Código hash",{req:1,dado:1})+'</div></section>';
+    h+='<section class="bloco"><h3>Emolumentos e selo</h3><span class="aviso">Informe os valores da tabela vigente. Campos vazios saem como R$ [PENDENTE].</span><div class="grade">'+
+      N.EMOL.map(([k,l])=>campo("emol."+k,l+" (R$)",{dado:1,ph:"0,00"})).join("")+campo("emol.total","Total (R$)",{dado:1,ph:"0,00"})+campo("selo","Selo digital",{dado:1,larga:1,dica:"Pode ficar em branco até a lavratura"})+'</div></section>';
+    const pres=[]; r.outorgantes.forEach(o=>{ if(o.tp==="PF") pres.push(o.pf); else o.pj.reps.forEach(x=>pres.push(x)); });
+    const res=resumoPadroes();
+    h+='<section class="bloco"><div class="bloco-topo"><h3>Valores salvos</h3>'+(res.length?'<span class="aviso">Hoje: '+H(res.join(", "))+'</span>':'')+'</div>'+
+      '<p class="aviso">Guarde o substabelecimento, o prazo e os emolumentos desta procuração para que as próximas já comecem com eles.</p>'+
+      '<div class="biblio"><button type="button" class="mini" data-acao="fechoPadrao">Salvar estes valores como padrão</button><button type="button" class="mini" data-pdacao="abrir">Ver ou remover valores salvos</button></div></section>';
+    if(pres.some(p=>p.assin && p.assin!=="normal")) h+='<section class="bloco"><h3>Assinatura a rogo</h3><div class="grade">'+campo("rogo.nome","Quem assina a rogo",{req:1})+campo("rogo.qualif","Qualificação (nacionalidade, documento, CPF)",{req:1,larga:1})+campo("rogo.t1","Testemunha 1 (nome e documento)",{req:1,larga:1})+campo("rogo.t2","Testemunha 2 (nome e documento)",{req:1,larga:1})+'</div></section>';
+    return h;
+  }
+  // conferência
+  const cf=N.conferir(r), m=N.montar(r);
+  const cnt={OK:0,PENDENTE:0,"ATENÇÃO":0}; cf.rows.forEach(x=>{ if(x.status) cnt[x.status]++; });
+  const bloqueios = N.checarDocs(r).filter(x=>x.bloq);
+  let topo='';
+  if(bloqueios.length){
+    topo='<div class="bloqueio" role="alert"><b>A minuta não pode ser gerada: '+bloqueios.length+' erro'+(bloqueios.length>1?'s':'')+' em documentos.</b><ul>'+
+      bloqueios.map(x=>'<li><button type="button" class="link" data-etapa="'+x.etapa+'">'+H(x.campo)+'</button>: '+H(x.msg)+'</li>').join("")+'</ul><span>Corrija os campos marcados em vermelho. A minuta é liberada sozinha quando não houver mais erros.</span></div>';
+  }
+  let h=topo+'<section class="bloco"><div class="bloco-topo"><h3>Ficha de conferência</h3></div>'+
+    '<div class="resumo"><div class="ok"><b>'+cnt.OK+'</b><span>campos conferidos</span></div><div class="pend"><b>'+cnt.PENDENTE+'</b><span>pendentes</span></div><div class="at"><b>'+cnt["ATENÇÃO"]+'</b><span>exigem atenção</span></div></div>';
+  h+='<div class="tabela"><table><thead><tr><th>Campo</th><th>Valor</th><th>Status</th></tr></thead><tbody>'+cf.rows.map(x=>x.sec?'<tr class="sec"><td colspan="3">'+H(x.sec)+'</td></tr>':
+    '<tr><td>'+H(x.campo)+'</td><td class="v">'+H(x.valor)+'</td><td><span class="pill '+({OK:"ok",PENDENTE:"pend","ATENÇÃO":"at"}[x.status])+'">'+H(x.status)+'</span>'+(x.nota?'<div class="aviso">'+H(x.nota)+'</div>':'')+'</td></tr>').join("")+'</tbody></table></div>';
+  if(bloqueios.length){
+    h+='<p class="aviso">Os erros de documentos estão listados no topo desta página.</p></section>';
+  } else
+  h+='<div class="confirmar">'+(r.fichaOk?'<span>Ficha confirmada. A minuta abaixo reflete os dados atuais.</span><button type="button" class="mini" data-acao="desconfirmar">Reabrir conferência</button>':
+    '<span>Confira a ficha com os documentos originais antes de gerar a minuta.</span><button type="button" class="btn p" data-acao="confirmar">Confirmar ficha e gerar minuta</button>')+'</div></section>';
+  if(cf.alertas.length) h+='<section class="bloco"><h3>Alertas jurídicos</h3><ul class="alertas">'+cf.alertas.map(a=>'<li>'+H(a)+'</li>').join("")+'</ul></section>';
+  if(r.fichaOk && !bloqueios.length){
+    h+='<section class="bloco"><div class="bloco-topo"><h3>Minuta</h3><span style="display:flex;gap:8px;flex-wrap:wrap"><button type="button" class="btn p" data-acao="docx">Baixar .docx</button><button type="button" class="btn" data-acao="copiar">Copiar texto</button></span></div>';
+    h+='<div class="mesa-folha"><div class="folha"><div class="tit">'+H(m.titulo)+'</div><div class="corpo">'+m.seg.map(s=>{ let t=H(s.t); if(s.b) t='<b>'+t+'</b>'; if(s.p) t='<mark>'+t+'</mark>'; return t; }).join("")+'</div>'+
+      m.ass.map(x=>'<div class="ass">______________________________________________<br><b>'+H(x.nome)+'</b>'+(x.sub?'<br>'+H(x.sub):'')+'</div>').join("")+'</div></div>';
+    if(m.pend.length) h+='<h3>Pendências ('+m.pend.length+')</h3><ul class="alertas">'+m.pend.map(p=>'<li class="pend">'+H(p)+'</li>').join("")+'</ul>';
+    h+='</section>';
+  }
+  return h;
+}
+function listaDocs(a, marcavel){
+  return '<div class="docs">'+N.documentos(a).map(g=>'<div class="docs-grupo"><h4>'+H(g.titulo)+'</h4><ul>'+g.itens.map(x=>{
+    const feito = marcavel && a.docs && a.docs[x.id];
+    const corpo='<span class="doc-txt">'+H(x.txt)+(x.obs?'<small>'+H(x.obs)+'</small>':'')+'</span>';
+    return '<li>'+(marcavel ? '<label class="doc'+(feito?" feito":"")+'"><input type="checkbox" id="doc-'+H(x.id)+'" data-doc="'+H(x.id)+'"'+(feito?" checked":"")+'>'+corpo+'</label>' : '<span class="doc">'+corpo+'</span>')+'</li>';
+  }).join("")+'</ul></div>').join("")+'</div>';
+}
+function copiar(texto, ok){
+  const reserva=()=>{ const t=document.createElement("textarea"); t.value=texto; t.style.position="fixed"; t.style.opacity="0"; document.body.appendChild(t); t.select();
+    let deu=false; try{ deu=document.execCommand("copy"); }catch(e){} t.remove(); toast(deu?ok:"Não foi possível copiar automaticamente; selecione o texto e use Ctrl+C"); };
+  if(navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(texto).then(()=>toast(ok), reserva); else reserva();
+}
+function extensoTxt(iso){ const s=N.dataExtensoSeg(iso); return s? s.map(x=>x[0]).join("") : ""; }
+
+/* ---- eventos da mesa ---- */
+const mesa=$("#mesa");
+/* ---- busca de endereço pelo CEP ---- */
+const cepMsg = {}; const cepCache = {}; let cepUltimo = {};
+async function consultarCep(cep){
+  if(cepCache[cep]) return cepCache[cep];
+  let d;
+  if(servidor) d = await API("GET","/api/cep/"+cep);
+  else {
+    if(db || window.claude) throw new Error("bloqueado");
+    const r = await fetch("https://viacep.com.br/ws/"+cep+"/json/"); const j = await r.json();
+    if(!r.ok || j.erro) throw new Error("não encontrado");
+    d = {logr:j.logradouro||"", bairro:j.bairro||"", cidade:j.localidade||"", uf:j.uf||""};
+  }
+  return cepCache[cep] = d;
+}
+function avisoCep(base, msg){ cepMsg[base]=msg; const el=document.getElementById(fid(base+".cep")); const d=el && el.parentNode.querySelector(".dica"); if(d) d.textContent=msg; }
+async function buscarCep(base, cep){
+  if(cepUltimo[base]===cep) return; cepUltimo[base]=cep;
+  const id=atual; avisoCep(base,"Buscando endereço…");
+  try{
+    const d = await consultarCep(cep);
+    const r = arquivo[id]; if(!r) return;
+    const alvo = get(r, base); if(!alvo) return;
+    alvo.endr = alvo.endr || {};
+    if(d.logr) alvo.endr.logr = d.logr;
+    if(d.bairro) alvo.endr.bairro = d.bairro;
+    if(d.cidade) alvo.endr.cidade = d.cidade;
+    if(d.uf) alvo.endr.uf = d.uf;
+    cepMsg[base] = d.logr ? "Endereço encontrado. Confira e informe o número." : "CEP geral da cidade: informe a rua e o bairro.";
+    salvarDepois(id);
+    if(atual===id){ redesenha(); const n=document.getElementById(fid(base+(d.logr?".endr.num":".endr.logr"))); if(n) n.focus(); }
+  }catch(e){
+    cepUltimo[base]=null;
+    avisoCep(base, e.message==="bloqueado" ? "A busca de CEP não funciona no link do Claude; preencha o endereço (no servidor do cartório ela é automática)." : "CEP não encontrado. Confira o número ou preencha o endereço.");
+  }
+}
+mesa.addEventListener("input",e=>{
+  const el=e.target;
+  if(el.dataset.pd){ const ks=el.dataset.pd.split("."); if(ks.length>1 && !padroes[ks[0]]) padroes[ks[0]]={}; set(padroes, el.dataset.pd, el.value); salvarConfigDepois(); return; }
+  const p=el.dataset.p; if(!p||!atual) return;
+  let v=el.value;
+  if(el.dataset.mask==="cpf"){ v=N.fmtCPF(v); el.value=v; }
+  if(el.dataset.mask==="cnpj"){ v=N.fmtCNPJ(v); el.value=v; }
+  if(el.dataset.mask==="cep"){ v=N.fmtCEP(v); el.value=v; }
+  set(arquivo[atual], p, v);
+  atualizarErros();
+  if(el.dataset.mask==="cep" && v.replace(/\D/g,"").length===8) buscarCep(p.replace(/\.cep$/,""), v.replace(/\D/g,""));
+  if(el.tagName!=="SELECT") { const lab=el.closest("label.f"); if(lab) lab.classList.toggle("falta", lab.classList.contains("falta") && !v); }
+  salvarDepois(atual);
+});
+mesa.addEventListener("change",e=>{
+  const el=e.target; if(!atual || !arquivo[atual]) return;
+  if(el.dataset.doc){ const r=arquivo[atual]; r.docs=r.docs||{}; r.docs[el.dataset.doc]=el.checked; salvarDepois(atual);
+    const lab=el.closest(".doc"); if(lab) lab.classList.toggle("feito",el.checked);
+    const tot=document.getElementById("docs-cont"); if(tot){ const l=N.documentos(r).flatMap(g=>g.itens); tot.textContent=l.filter(x=>r.docs[x.id]).length+" de "+l.length+" apresentados"; }
+    return; }
+  if(el.dataset.troca){ aplicarModelo(arquivo[atual], el.value); salvarDepois(atual); setTimeout(()=>{ redesenha(); renderLista(); },0); return; }
+  if(!el.dataset.p) return;
+  if(el.tagName==="SELECT" && get(arquivo[atual], el.dataset.p)!==el.value){ set(arquivo[atual], el.dataset.p, el.value); salvarDepois(atual); }
+  // estrutura muda (selects) ou campos validados: redesenha preservando foco/rolagem
+  // datas: o navegador dispara "change" a cada dígito do ano; redesenhar ali joga o cursor de volta para o dia.
+  // Por isso a data só atualiza a tela quando o campo perde o foco.
+  if(el.type==="date"){ set(arquivo[atual], el.dataset.p, el.value); dataPendente=true; return; }
+  if(el.tagName==="SELECT" || el.dataset.mask){ setTimeout(()=>{ redesenha(); renderLista(); },0); }
+});
+let dataPendente=false;
+mesa.addEventListener("focusout",e=>{
+  if(e.target.type!=="date" || !dataPendente) return;
+  dataPendente=false; setTimeout(()=>{ redesenha(); renderLista(); },0);
+});
+mesa.addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  if(b.dataset.pdseg){ set(padroes,b.dataset.pdseg,b.dataset.v); if(b.dataset.pdseg==="prazo" && b.dataset.v!=="DEFINIDO") padroes.prazoTexto=""; salvarConfigDepois(); redesenha(); return; }
+  if(b.dataset.pdacao){ const pa=b.dataset.pdacao, i=+b.dataset.i;
+    if(pa==="abrir"){ atual=null; tela="padroes"; renderLista(); renderMesa(); window.scrollTo(0,0); return; }
+    if(pa==="limparEsc"){ delete padroes.escNome; delete padroes.escCargo; toast("Escrevente padrão removido"); }
+    else if(pa==="escDe"){ padroes.escNome=escreventes[i].nome; padroes.escCargo=escreventes[i].cargo; toast("Escrevente padrão: "+padroes.escNome); }
+    else if(pa==="rmEsc"){ const x=escreventes[i]; escreventes.splice(i,1); toast(x.nome+" removido do cadastro"); }
+    else if(pa==="cadEsc"){ if(!padroes.escNome||!padroes.escCargo){ toast("Preencha nome e cargo do escrevente padrão"); return; }
+      escreventes=escreventes.filter(x=>x.nome!==padroes.escNome).concat([{nome:padroes.escNome.trim(),cargo:padroes.escCargo.trim()}]); toast("Escrevente cadastrado"); }
+    else if(pa==="limpar"){ delete padroes[b.dataset.k]; if(b.dataset.k==="prazo") delete padroes.prazoTexto; toast("Valor salvo removido"); }
+    else if(pa==="limparTudo"){ if(!b.classList.contains("armado")){ b.classList.add("armado"); b.textContent="Confirmar: remover todos"; setTimeout(()=>{ if(b.isConnected){ b.classList.remove("armado"); b.textContent="Remover todos os valores salvos"; } },4000); return; }
+      padroes={}; toast("Todos os valores salvos foram removidos"); }
+    salvarEscreventes(); redesenha(); return; }
+  if(b.dataset.modelo){ criar(b.dataset.modelo); return; }
+  if(b.dataset.ver){ escolhido=b.dataset.ver; redesenha(); return; }
+  if(b.dataset.copiarDocs){ const m=N.MODELOS.find(x=>x.id===b.dataset.copiarDocs); copiar(N.documentosTexto(N.novoAto(m.id),"Documentos para procuração "+m.nome+" ("+m.sub+")"), "Lista copiada"); return; }
+  if(b.dataset.etapa){ etapa=b.dataset.etapa; redesenha(); return; }
+  const r=arquivo[atual]; if(!r) return;
+  if(b.dataset.seg){ set(r,b.dataset.seg,b.dataset.v); salvarDepois(atual); redesenha(); return; }
+  const ac=b.dataset.acao; if(!ac) return;
+  const i=+b.dataset.i;
+  if(ac==="addParte"){ r[b.dataset.chave].push(N.novaParte("PF")); }
+  else if(ac==="rmParte"){ r[b.dataset.chave].splice(i,1); }
+  else if(ac==="addRep"){ get(r,b.dataset.base).reps.push(N.novaPF({cargo:"sócio administrador"})); }
+  else if(ac==="rmRep"){ get(r,b.dataset.base).reps.splice(i,1); }
+  else if(ac==="addPoder"){ r.poderes.push({k:b.dataset.k, titulo:N.PODERES[b.dataset.k].titulo, v:{}}); toast("Poder incluído na posição "+r.poderes.length); }
+  else if(ac==="rmPoder"){ r.poderes.splice(i,1); }
+  else if(ac==="sobe" && i>0){ const t=r.poderes[i]; r.poderes[i]=r.poderes[i-1]; r.poderes[i-1]=t; }
+  else if(ac==="desce" && i<r.poderes.length-1){ const t=r.poderes[i]; r.poderes[i]=r.poderes[i+1]; r.poderes[i+1]=t; }
+  else if(ac==="flag"){ r.flags[b.dataset.k]=!r.flags[b.dataset.k]; }
+  else if(ac==="usarEscPadrao"){ r.ato.escNome=padroes.escNome; r.ato.escCargo=padroes.escCargo||""; }
+  else if(ac==="escPadrao"){ if(N.vazio(r.ato.escNome)||N.vazio(r.ato.escCargo)){ toast("Preencha nome e cargo do escrevente"); return; }
+    padroes.escNome=r.ato.escNome.trim(); padroes.escCargo=r.ato.escCargo.trim();
+    if(!escreventes.some(x=>x.nome===padroes.escNome)) escreventes=escreventes.concat([{nome:padroes.escNome,cargo:padroes.escCargo}]);
+    salvarEscreventes(); toast("Escrevente padrão salvo: entra em toda procuração nova"); }
+  else if(ac==="fechoPadrao"){
+    if(r.substab) padroes.substab=r.substab;
+    if(r.prazo){ padroes.prazo=r.prazo; padroes.prazoTexto=r.prazo==="DEFINIDO"?r.prazoTexto:""; }
+    if(Object.values(r.emol).some(v=>!N.vazio(v))) padroes.emol=Object.assign({}, r.emol);
+    salvarEscreventes(); toast("Substabelecimento, prazo e emolumentos salvos como padrão"); }
+  else if(ac==="usarEsc"){ const x=escreventes[i]; r.ato.escNome=x.nome; r.ato.escCargo=x.cargo; }
+  else if(ac==="salvarEsc"){ if(N.vazio(r.ato.escNome)||N.vazio(r.ato.escCargo)){ toast("Preencha nome e cargo do escrevente"); return; }
+    escreventes=escreventes.filter(x=>x.nome!==r.ato.escNome).concat([{nome:r.ato.escNome.trim(),cargo:r.ato.escCargo.trim()}]); salvarEscreventes(); toast("Escrevente guardado no cadastro"); }
+  else if(ac==="confirmar" && N.checarDocs(r).some(x=>x.bloq)){ toast("Corrija os erros nos documentos primeiro"); return; }
+  else if(ac==="confirmar"){ r.fichaOk=true; if(r.status==="rascunho") r.status="conferida"; }
+  else if(ac==="desconfirmar"){ r.fichaOk=false; }
+  else if(ac==="duplicar"){ const id=uid(); const c=JSON.parse(JSON.stringify(r)); c.status="rascunho"; c.fichaOk=false; c.selo=""; c.cnib={resultado:"",hash:""}; c.criadoEm=new Date().toISOString(); arquivo[id]=c; atual=id; salvarDepois(id); toast("Cópia criada como rascunho"); renderMesa(); return; }
+  else if(ac==="excluir"){ if(!b.classList.contains("armado")){ b.classList.add("armado"); b.textContent="Confirmar exclusão"; setTimeout(()=>{ if(b.isConnected){ b.classList.remove("armado"); b.textContent="Excluir"; } },4000); return; } excluir(atual); return; }
+  else if(ac==="docx"){ baixarDocx(r); return; }
+  else if(ac==="copiar" && N.checarDocs(r).some(x=>x.bloq)){ toast("Corrija os erros nos documentos antes de copiar a minuta"); return; }
+  else if(ac==="copiar"){ copiar(N.textoPlano(N.montar(r)), "Texto copiado"); return; }
+  else if(ac==="copiarDocs"){ copiar(N.documentosTexto(r,"Documentos para a procuração de "+tituloReg(r)), "Lista copiada"); return; }
+  salvarDepois(atual); redesenha();
+});
+function aplicarModelo(r, id){
+  const m=N.MODELOS.find(x=>x.id===id); if(!m || m.id===r.modelo) return;
+  const antigos={}; r.poderes.forEach(pd=>{ if(!antigos[pd.k]) antigos[pd.k]=pd; });
+  r.modelo=m.id; r.tipo=m.tipo; r.intro=m.intro;
+  r.poderes=m.poderes.map(k=>antigos[k]||{k, titulo:N.PODERES[k].titulo, v:{}});
+  if(r.outorgantes[0]) r.outorgantes[0].tp=m.ot;
+  if(r.outorgados[0]){ r.outorgados[0].tp=m.od; if(m.odDoc && !r.outorgados[0].pf.docTipo) r.outorgados[0].pf.docTipo=m.odDoc; }
+  r.fichaOk=false; if(r.status==="conferida") r.status="rascunho";
+  toast("Tipo alterado para "+m.nome+" · "+m.sub);
+}
+function redesenha(){
+  // mantém a tela onde está: trava a altura enquanto o conteúdo é trocado e devolve a rolagem
+  const y=window.scrollY, ativo=document.activeElement, foco=ativo && ativo.id;
+  let sel=null; try{ if(ativo && typeof ativo.selectionStart==="number") sel=[ativo.selectionStart, ativo.selectionEnd]; }catch(e){}
+  const mesa=$("#mesa"); mesa.style.minHeight=mesa.offsetHeight+"px";
+  renderMesa(); window.scrollTo(0,y);
+  if(foco){ const el=document.getElementById(foco); if(el){ el.focus({preventScroll:true}); if(sel) try{ el.setSelectionRange(sel[0], sel[1]); }catch(e){} } }
+}
+
+async function baixarDocx(r){
+  if(N.checarDocs(r).some(x=>x.bloq)){ toast("Corrija os erros nos documentos antes de gerar a minuta"); return; }
+  if(typeof JSZip==="undefined"){ toast("Gerador de Word não carregou. Recarregue a página."); return; }
+  const m=N.montar(r); const z=new JSZip();
+  Object.entries(N.DOCX_FIXOS).forEach(([k,v])=>z.file(k,v));
+  z.file("word/document.xml", N.documentXml(m));
+  const blob=await z.generateAsync({type:"blob",mimeType:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"});
+  const nome=("Procuracao "+r.tipo+" - "+tituloReg(r)).normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^\w\- ]+/g,"").replace(/\s+/g," ").trim().slice(0,90)+".docx";
+  if(downloads){
+    try{ await downloads.save({filename:nome, data:blob}); toast("Minuta salva: "+nome); }
+    catch(e){ toast(e && e.code==="declined" ? "Download cancelado" : "Não foi possível baixar: "+(e&&e.message||"erro")); }
+    return;
+  }
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=nome; document.body.appendChild(a); a.click(); a.remove();
+}
+
+iniciar();
+})();
+</script>
+</body></html>

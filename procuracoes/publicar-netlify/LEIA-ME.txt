@@ -1,0 +1,18 @@
+LIVRO DE PROCURAÇÕES — PASTA PARA O NETLIFY
+
+COMO PUBLICAR
+1) Acesse https://app.netlify.com/drop
+2) Arraste ESTA PASTA inteira (publicar-netlify) para a página.
+3) Você recebe um endereço https://….netlify.app. Domínio próprio:
+   Site configuration > Domain management.
+Para atualizar: arraste a pasta nova em Deploys > "Drag and drop".
+
+COMO FUNCIONA NO NETLIFY (modo local)
+- Cada computador tem a SUA biblioteca, guardada só naquele navegador.
+- Não há senha: quem tiver o endereço abre o sistema, mas só vê o que
+  foi salvo no próprio navegador.
+- Limpar o histórico do navegador APAGA as procurações daquele computador.
+- Não há backup. Para biblioteca compartilhada, senha e backup, use o
+  servidor do cartório (pasta servidor, veja LEIA-ME.md).
+
+NUNCA coloque nesta pasta a pasta "servidor" nem "dados".
